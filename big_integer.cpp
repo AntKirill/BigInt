@@ -20,8 +20,8 @@ big_integer::big_integer(uint_fast64_t a) {
     number.clear();
     sign = a >= 0;
     while (a > 0) {
-        number.push_back((usi) (a % actualBase));
-        a /= actualBase;
+        number.push_back((usi) (a % base));
+        a /= base;
     }
 }
 
@@ -57,8 +57,8 @@ big_integer &big_integer::operator+=(big_integer const &rhs) {
             if (i == number.size())
                 number.push_back(0);
             cur = (ll) number[i] + (ll) carry + (ll) (i < rhs.number.size() ? rhs.number[i] : 0);
-            number[i] = (usi) (cur % actualBase);
-            carry = (usi) (cur / actualBase);
+            number[i] = (usi) (cur % base);
+            carry = (usi) (cur / base);
         }
     } else {
         big_integer posThis = *this;
@@ -93,7 +93,7 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
             cur = (ll) a.number[i];
             cur -= carry + (ll) (i < b.number.size() ? b.number[i] : 0);
             carry = (cur < 0);
-            if (carry) cur += actualBase;
+            if (carry) cur += base;
             a.number[i] = (usi) cur;
         }
         while (a.number.size() > 1 && a.number.back() == 0)
@@ -119,13 +119,12 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
 
 big_integer &big_integer::operator*=(big_integer const &rhs) {
     big_integer ans;
-    ll actualBase = (ll) base + 1;
     ans.number.resize(number.size() + rhs.number.size());
     for (size_t i = 0; i < number.size(); ++i)
         for (ll j = 0, carry = 0; j < (int) rhs.number.size() || carry; ++j) {
             ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < (usi) rhs.number.size() ? rhs.number[j] : 0) + carry;
-            ans.number[i + j] = usi((cur % actualBase));
-            carry = usi((cur / actualBase));
+            ans.number[i + j] = usi((cur % base));
+            carry = usi((cur / base));
 
         }
     while (ans.number.size() > 1 && ans.number.back() == 0)
