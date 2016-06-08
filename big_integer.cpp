@@ -20,8 +20,8 @@ big_integer::big_integer(uint_fast64_t a) {
     number.clear();
     sign = a >= 0;
     while (a > 0) {
-        number.push_back((usi) (a % base));
-        a /= base;
+        number.push_back((usi) (a % actualBase));
+        a /= actualBase;
     }
 }
 
@@ -57,8 +57,8 @@ big_integer &big_integer::operator+=(big_integer const &rhs) {
             if (i == number.size())
                 number.push_back(0);
             cur = (ll) number[i] + (ll) carry + (ll) (i < rhs.number.size() ? rhs.number[i] : 0);
-            number[i] = (usi) (cur % base);
-            carry = (usi) (cur / base);
+            number[i] = (usi) (cur % actualBase);
+            carry = (usi) (cur / actualBase);
         }
     } else {
         big_integer posThis = *this;
@@ -90,10 +90,13 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
         ll carry = 0;
         ll cur = 0;
         for (size_t i = 0; i < b.number.size() || carry; ++i) {
+//            a.number[i] -= carry + (i < b.number.size() ? b.number[i] : 0);
+//            carry = (a.number[i] < 0);
+//            if (carry) a.number[i] += base;
             cur = (ll) a.number[i];
             cur -= carry + (ll) (i < b.number.size() ? b.number[i] : 0);
             carry = (cur < 0);
-            if (carry) cur += base;
+            if (carry) cur += actualBase;
             a.number[i] = (usi) cur;
         }
         while (a.number.size() > 1 && a.number.back() == 0)
@@ -119,12 +122,13 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
 
 big_integer &big_integer::operator*=(big_integer const &rhs) {
     big_integer ans;
+    ll actualBase = (ll) base + 1;
     ans.number.resize(number.size() + rhs.number.size());
     for (size_t i = 0; i < number.size(); ++i)
         for (ll j = 0, carry = 0; j < (int) rhs.number.size() || carry; ++j) {
             ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < (usi) rhs.number.size() ? rhs.number[j] : 0) + carry;
-            ans.number[i + j] = usi((cur % base));
-            carry = usi((cur / base));
+            ans.number[i + j] = usi((cur % actualBase));
+            carry = usi((cur / actualBase));
 
         }
     while (ans.number.size() > 1 && ans.number.back() == 0)
@@ -184,7 +188,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
                 }
             }
             //finally
-            ans.push_back(usi(l));
+            ans.push_back(l);
             usi save = (usi) pref.number.size();
             pref -= l * divider;
             int d = save - (int) pref.number.size();
@@ -368,6 +372,17 @@ std::string to_string(big_integer const &a) {
     if (!a.sign) {
         ans += '-';
     }
+//    usi dbase = 10;
+//    big_integer n(0, dbase);
+//    big_integer mul(1, dbase);
+//    big_integer q(a.base, dbase);
+//    for (int i = 0; i < (int) a.number.size(); i++) {
+//        n += mul * big_integer(a.number[i], dbase);
+//        mul *= q;
+//    }
+//    for (int i = (int) n.number.size() - 1; i >= 0; i--) {
+//        ans += std::to_string(n.number[i]);
+//    }
     big_integer b = a;
     big_integer cur = 0;
     big_integer ten = 10;
@@ -414,24 +429,27 @@ int main() {
     big_integer p;
     big_integer q;
 
+    //q = big_integer("8963214782301");
+    //p = big_integer("789456235896214587");
     std::cout << clock() / 1000000.0 << std::endl;
     freopen("tests.in", "r", stdin);
     std::cin >> p;
-    std::cin >> q;
+    // std::cin >> q;
 
-    for (int i = 0; i < 1000; i++) {
-        p *= q;
-    }
-    for (int i = 0; i < 1000; i++) {
-        p += p;
-    }
-    for (int i = 0; i < 1000; i++) {
-        p /= 2;
-    }
-    for (int i = 0; i < 1000; i++) {
-        p /= q;
-    }
+//    for (int i = 0; i < 100; i++) {
+//        p *= q;
+//    }
+//    for (int i = 0; i < 100; i++) {
+//        p += p;
+//    }
+//    for (int i = 0; i < 100; i++) {
+//        p /= 2;
+//    }
+//    //std::cout << p << std::endl;
+//    for (int i = 0; i < 100; i++) {
+//        p /= q;
+//    }
     std::cout << p << std::endl;
-    std::cout << clock() / 1000.0 << std::endl;
+    std::cout << clock() / 1000000.0 << std::endl;
     return 0;
 }
