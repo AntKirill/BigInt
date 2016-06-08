@@ -126,7 +126,8 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     ans.number.resize(number.size() + rhs.number.size());
     for (size_t i = 0; i < number.size(); ++i)
         for (ll j = 0, carry = 0; j < (int) rhs.number.size() || carry; ++j) {
-            ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < (usi) rhs.number.size() ? rhs.number[j] : 0) + carry;
+            ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < (usi) rhs.number.size() ? rhs.number[j] : 0) +
+                     carry;
             ans.number[i + j] = usi((cur % actualBase));
             carry = usi((cur / actualBase));
 
@@ -220,18 +221,25 @@ big_integer &big_integer::operator%=(big_integer const &rhs) {
 }
 
 big_integer &big_integer::operator&=(big_integer const &rhs) {
+    for (int i = 0; i < this->number.size(); i++) {
+        this->number[i] = this->number[i] & (i < rhs.number.size() ? rhs.number[i] : 0);
+    }
     return *this;
 
 }
 
 big_integer &big_integer::operator|=(big_integer const &rhs) {
+    for (int i = 0; i < this->number.size(); i++) {
+        this->number[i] = this->number[i] | (i < rhs.number.size() ? rhs.number[i] : 0);
+    }
     return *this;
-
 }
 
 big_integer &big_integer::operator^=(big_integer const &rhs) {
+    for (int i = 0; i < this->number.size(); i++) {
+        this->number[i] = this->number[i] ^ (i < rhs.number.size() ? rhs.number[i] : 0);
+    }
     return *this;
-
 }
 
 big_integer &big_integer::operator<<=(int rhs) {
@@ -240,16 +248,21 @@ big_integer &big_integer::operator<<=(int rhs) {
         this->number.push_back(0);
     }
     std::reverse(this->number.begin(), this->number.end());
-    for (int i = 0; i< rhs % this->basepow; i++) {
+    for (int i = 0; i < rhs % this->basepow; i++) {
         *this *= 2;
     }
     return *this;
 }
 
 big_integer &big_integer::operator>>=(int rhs) {
-
+    std::reverse(this->number.begin(), this->number.end());
+    for (int i = 0; i < rhs / basepow; i++) {
+        this->number.pop_back();
+    }
+    for (int i = 0; i < rhs % basepow; i++) {
+        *this /= 2;
+    }
     return *this;
-
 }
 
 big_integer big_integer::operator+() const {
@@ -342,12 +355,10 @@ bool operator==(big_integer const &a, big_integer const &b) {
 
 bool operator!=(big_integer const &a, big_integer const &b) {
     return !(a == b);
-
 }
 
 bool operator<(big_integer const &a, big_integer const &b) {
     return !(a >= b);
-
 }
 
 bool operator>(big_integer const &a, big_integer const &b) {
@@ -368,7 +379,6 @@ bool operator>(big_integer const &a, big_integer const &b) {
 
 bool operator<=(big_integer const &a, big_integer const &b) {
     return !(a > b);
-
 }
 
 bool operator>=(big_integer const &a, big_integer const &b) {
