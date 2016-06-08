@@ -188,7 +188,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
                 }
             }
             //finally
-            ans.push_back(l);
+            ans.push_back(usi(l));
             usi save = (usi) pref.number.size();
             pref -= l * divider;
             int d = save - (int) pref.number.size();
@@ -205,7 +205,8 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
         std::reverse(ans.begin(), ans.end());
         this->number = ans;
         if (sign != rhs.sign) {
-            this->sign = false;
+            if (-*this == 0 || *this == 0) this->sign = true;
+            else this->sign = false;
         } else {
             this->sign = true;
         }
@@ -234,11 +235,19 @@ big_integer &big_integer::operator^=(big_integer const &rhs) {
 }
 
 big_integer &big_integer::operator<<=(int rhs) {
+    std::reverse(this->number.begin(), this->number.end());
+    for (int i = 0; i < rhs / this->basepow; i++) {
+        this->number.push_back(0);
+    }
+    std::reverse(this->number.begin(), this->number.end());
+    for (int i = 0; i< rhs % this->basepow; i++) {
+        *this *= 2;
+    }
     return *this;
-
 }
 
 big_integer &big_integer::operator>>=(int rhs) {
+
     return *this;
 
 }
@@ -258,8 +267,7 @@ big_integer big_integer::operator-() const {
 }
 
 big_integer big_integer::operator~() const {
-    return *this;
-
+    return -*this - 1;
 }
 
 big_integer &big_integer::operator++() {
@@ -369,29 +377,20 @@ bool operator>=(big_integer const &a, big_integer const &b) {
 
 std::string to_string(big_integer const &a) {
     std::string ans = "";
+    int beg = 0;
     if (!a.sign) {
         ans += '-';
+        beg++;
     }
-//    usi dbase = 10;
-//    big_integer n(0, dbase);
-//    big_integer mul(1, dbase);
-//    big_integer q(a.base, dbase);
-//    for (int i = 0; i < (int) a.number.size(); i++) {
-//        n += mul * big_integer(a.number[i], dbase);
-//        mul *= q;
-//    }
-//    for (int i = (int) n.number.size() - 1; i >= 0; i--) {
-//        ans += std::to_string(n.number[i]);
-//    }
     big_integer b = a;
     big_integer cur = 0;
     big_integer ten = 10;
-    while (b > 0) {
+    while (b != 0) {
         cur = b % ten;
         ans += std::to_string(cur.number[0]);
         b /= ten;
     }
-    for (ll i = 0; i < ans.length() / 2; i++) {
+    for (ll i = beg; i < ans.length() / 2; i++) {
         std::swap(ans[i], ans[ans.length() - i - 1]);
     }
     return ans;
@@ -426,30 +425,33 @@ void operator>>(std::istream &s, big_integer &a) {
 }
 
 int main() {
-    big_integer p;
+    big_integer p = 2;
     big_integer q;
 
     //q = big_integer("8963214782301");
     //p = big_integer("789456235896214587");
     std::cout << clock() / 1000000.0 << std::endl;
     freopen("tests.in", "r", stdin);
-    std::cin >> p;
-    // std::cin >> q;
-
-//    for (int i = 0; i < 100; i++) {
+//    std::cin >> p;
+//    std::cin >> q;
+//
+//    for (int i = 0; i < 1000; i++) {
 //        p *= q;
 //    }
-//    for (int i = 0; i < 100; i++) {
+//    for (int i = 0; i < 1000; i++) {
 //        p += p;
 //    }
-//    for (int i = 0; i < 100; i++) {
+//    for (int i = 0; i < 1000; i++) {
 //        p /= 2;
 //    }
 //    //std::cout << p << std::endl;
-//    for (int i = 0; i < 100; i++) {
+//    for (int i = 0; i < 1000; i++) {
 //        p /= q;
 //    }
-    std::cout << p << std::endl;
+//    std::cout << p << std::endl;
+    //usi t = 10;
+    //std::cout << (t << 2) << std::endl;
+    std::cout << ~p << std::endl;
     std::cout << clock() / 1000000.0 << std::endl;
     return 0;
 }
