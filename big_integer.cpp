@@ -184,7 +184,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
                 }
             }
             //finally
-            ans.push_back(l);
+            ans.push_back(usi(l));
             usi save = (usi) pref.number.size();
             pref -= l * divider;
             int d = save - (int) pref.number.size();
@@ -419,19 +419,19 @@ int main() {
     std::cin >> p;
     std::cin >> q;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         p *= q;
     }
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         p += p;
     }
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         p /= 2;
     }
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         p /= q;
     }
     std::cout << p << std::endl;
-    std::cout << clock() / 1000000.0 << std::endl;
+    std::cout << clock() / 1000.0 << std::endl;
     return 0;
 }
