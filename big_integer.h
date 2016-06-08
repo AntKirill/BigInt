@@ -72,7 +72,7 @@ struct big_integer {
     friend std::string to_string(big_integer const &a);
 
 private:
-    const uint_fast32_t base = (uint_fast32_t) 1 << 31 - 1;
+    const uint_fast32_t base = (uint_fast32_t) (1 << 31) - 1;
     const uint_fast64_t actualBase = (uint_fast64_t) base + 1;
     const int basepow = 31;
 };
