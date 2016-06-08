@@ -369,17 +369,6 @@ std::string to_string(big_integer const &a) {
     if (!a.sign) {
         ans += '-';
     }
-//    usi dbase = 10;
-//    big_integer n(0, dbase);
-//    big_integer mul(1, dbase);
-//    big_integer q(a.base, dbase);
-//    for (int i = 0; i < (int) a.number.size(); i++) {
-//        n += mul * big_integer(a.number[i], dbase);
-//        mul *= q;
-//    }
-//    for (int i = (int) n.number.size() - 1; i >= 0; i--) {
-//        ans += std::to_string(n.number[i]);
-//    }
     big_integer b = a;
     big_integer cur = 0;
     big_integer ten = 10;
@@ -426,26 +415,23 @@ int main() {
     big_integer p;
     big_integer q;
 
-    //q = big_integer("8963214782301");
-    //p = big_integer("789456235896214587");
     std::cout << clock() / 1000000.0 << std::endl;
     freopen("tests.in", "r", stdin);
     std::cin >> p;
-    // std::cin >> q;
+    std::cin >> q;
 
-//    for (int i = 0; i < 100; i++) {
-//        p *= q;
-//    }
-//    for (int i = 0; i < 100; i++) {
-//        p += p;
-//    }
-//    for (int i = 0; i < 100; i++) {
-//        p /= 2;
-//    }
-//    //std::cout << p << std::endl;
-//    for (int i = 0; i < 100; i++) {
-//        p /= q;
-//    }
+    for (int i = 0; i < 100; i++) {
+        p *= q;
+    }
+    for (int i = 0; i < 100; i++) {
+        p += p;
+    }
+    for (int i = 0; i < 100; i++) {
+        p /= 2;
+    }
+    for (int i = 0; i < 100; i++) {
+        p /= q;
+    }
     std::cout << p << std::endl;
     std::cout << clock() / 1000000.0 << std::endl;
     return 0;
