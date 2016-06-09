@@ -19,6 +19,9 @@ big_integer::big_integer(big_integer const &other) {
 big_integer::big_integer(uint_fast64_t a) {
     number.clear();
     sign = a >= 0;
+    if (a == 0) {
+        number.push_back(0);
+    }
     while (a > 0) {
         number.push_back((usi) (a % actualBase));
         a /= actualBase;
@@ -122,7 +125,8 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     ans.number.resize(number.size() + rhs.number.size());
     for (size_t i = 0; i < number.size(); ++i)
         for (ll j = 0, carry = 0; j < (int) rhs.number.size() || carry; ++j) {
-            ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < (usi) rhs.number.size() ? rhs.number[j] : 0) + carry;
+            ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < (usi) rhs.number.size() ? rhs.number[j] : 0) +
+                     carry;
             ans.number[i + j] = usi((cur % actualBase));
             carry = usi((cur / actualBase));
         }
@@ -133,78 +137,126 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     return *this;
 }
 
+//big_integer &big_integer::operator/=(big_integer const &rhs) {
+//    if (rhs == 1) {
+//        return *this;
+//    }
+//    if (sign && rhs.sign && *this < rhs) {
+//        *this = 0;
+//    } else if (!sign && !rhs.sign && *this > rhs) {
+//        *this = 0;
+//    } else {
+//        big_integer curValue = *this;
+//        curValue.sign = true;
+//        big_integer divider = rhs;
+//        divider.sign = true;
+//        std::vector<usi> ans;
+//        while (curValue.number.size() > 0) {
+//            big_integer pref;
+//            //take pref = min {pref >= divider} || pref = 0
+//            std::vector<usi> digits;
+//            int it = (int) curValue.number.size() - 1;
+//            if (curValue.number[it] == 0) {
+//                digits.push_back(0);
+//                pref.number = digits;
+//            }
+//            else {
+//                while (digits.size() < divider.number.size()) {
+//                    digits.push_back(curValue.number[it--]);
+//                }
+//                std::reverse(digits.begin(), digits.end());
+//                pref.number = digits;
+//                if (pref < divider) {
+//                    if (it < 0) break;
+//                    std::reverse(digits.begin(), digits.end()); //
+//                    digits.push_back(curValue.number[it]);
+//                    std::reverse(digits.begin(), digits.end());
+//                    pref.number = digits;
+//                }
+//            }
+//            while (pref.number.size() > 1 && pref.number.back() == 0)
+//                pref.number.pop_back();
+//            //take l = max {k: k*divider <= pref}
+//            ll l = 0, r = (ll) base + 1;
+//            while (r - l > 1) {
+//                usi m = usi((l + r) / 2);
+//                if (m * divider <= pref) {
+//                    l = m;
+//                } else {
+//                    r = m;
+//                }
+//            }
+//            //finally
+//            ans.push_back(usi(l));
+//            usi save = (usi) pref.number.size();
+//            pref -= l * divider;
+//            int d = save - (int) pref.number.size();
+//            for (int i = 0; i < d; i++) {
+//                curValue.number.pop_back();
+//            }
+//            it = (int) curValue.number.size() - 1;
+//            for (int i = (int) pref.number.size() - 1; i >= 0; i--) {
+//                curValue.number[it--] = pref.number[i];
+//            }
+//            if (curValue.number.back() == 0)
+//                curValue.number.pop_back();
+//        }
+//        std::reverse(ans.begin(), ans.end());
+//        this->number = ans;
+//        if (sign != rhs.sign) {
+//            if (-*this == 0 || *this == 0) this->sign = true;
+//            else this->sign = false;
+//        } else {
+//            this->sign = true;
+//        }
+//    }
+//    return *this;
+//}
+
 big_integer &big_integer::operator/=(big_integer const &rhs) {
-    if (rhs == 1) {
-        return *this;
+    std::vector<usi> ans;
+    ans.resize(this->number.size() - rhs.number.size() + 1);
+    big_integer curValue(*this);
+    big_integer now(0);
+    for (int i = 0; i < ans.size(); i++) {
+        ll l = 0, r = base + 1;
+        while (r - l > 1) {
+            ll m = (l + r) / 2;
+            now = usi(m) * rhs;
+            std::reverse(now.number.begin(), now.number.end());
+            for (int j = 0; j < ans.size() - i - 1; j++) {
+                now.number.push_back(0);
+            }
+            std::reverse(now.number.begin(), now.number.end());
+            if (now <= curValue) {
+                l = m;
+            } else {
+                r = m;
+            }
+        }
+        now = l * rhs;
+        std::reverse(now.number.begin(), now.number.end());
+        while (now.number.size() < curValue.number.size()) {
+            now.number.push_back(0);
+        }
+        std::reverse(now.number.begin(), now.number.end());
+        if (now > curValue) {
+            std::reverse(now.number.begin(), now.number.end());
+            now.number.pop_back();
+            std::reverse(now.number.begin(), now.number.end());
+        }
+        curValue -= now;
+        ans[i] = usi(l);
     }
-    if (sign && rhs.sign && *this < rhs) {
-        *this = 0;
-    } else if (!sign && !rhs.sign && *this > rhs) {
-        *this = 0;
+    std::reverse(ans.begin(), ans.end());
+    while (ans.size() > 1 && ans.back() == 0) {
+        ans.pop_back();
+    }
+    this->number = ans;
+    if (this->sign == rhs.sign) {
+        this->sign = true;
     } else {
-        big_integer curValue = *this;
-        curValue.sign = true;
-        big_integer divider = rhs;
-        divider.sign = true;
-        std::vector<usi> ans;
-        while (curValue.number.size() > 0) {
-            big_integer pref;
-            //take pref = min {pref >= divider} || pref = 0
-            std::vector<usi> digits;
-            int it = (int) curValue.number.size() - 1;
-            if (curValue.number[it] == 0) {
-                digits.push_back(0);
-                pref.number = digits;
-            }
-            else {
-                while (digits.size() < divider.number.size()) {
-                    digits.push_back(curValue.number[it--]);
-                }
-                std::reverse(digits.begin(), digits.end());
-                pref.number = digits;
-                if (pref < divider) {
-                    if (it < 0) break;
-                    std::reverse(digits.begin(), digits.end()); //
-                    digits.push_back(curValue.number[it]);
-                    std::reverse(digits.begin(), digits.end());
-                    pref.number = digits;
-                }
-            }
-            while (pref.number.size() > 1 && pref.number.back() == 0)
-                pref.number.pop_back();
-            //take l = max {k: k*divider <= pref}
-            ll l = 0, r = (ll) base + 1;
-            while (r - l > 1) {
-                usi m = usi((l + r) / 2);
-                if (m * divider <= pref) {
-                    l = m;
-                } else {
-                    r = m;
-                }
-            }
-            //finally
-            ans.push_back(usi(l));
-            usi save = (usi) pref.number.size();
-            pref -= l * divider;
-            int d = save - (int) pref.number.size();
-            for (int i = 0; i < d; i++) {
-                curValue.number.pop_back();
-            }
-            it = (int) curValue.number.size() - 1;
-            for (int i = (int) pref.number.size() - 1; i >= 0; i--) {
-                curValue.number[it--] = pref.number[i];
-            }
-            if (curValue.number.back() == 0)
-                curValue.number.pop_back();
-        }
-        std::reverse(ans.begin(), ans.end());
-        this->number = ans;
-        if (sign != rhs.sign) {
-            if (-*this == 0 || *this == 0) this->sign = true;
-            else this->sign = false;
-        } else {
-            this->sign = true;
-        }
+        this->sign = false;
     }
     return *this;
 }
@@ -379,24 +431,26 @@ bool operator>=(big_integer const &a, big_integer const &b) {
 }
 
 std::string to_string(big_integer const &a) {
-    std::string ans = "";
     int beg = 0;
+    std::string s;
     if (!a.sign) {
-        ans += '-';
+        s += '-';
         beg++;
     }
     big_integer b = a;
     big_integer cur = 0;
     big_integer ten = 10;
+    std::vector<usi> ans;
     while (b != 0) {
         cur = b % ten;
-        ans += std::to_string(cur.number[0]);
+        ans.push_back(cur.number[0]);
         b /= ten;
     }
-    for (ll i = beg; i < ans.length() / 2; i++) {
-        std::swap(ans[i], ans[ans.length() - i - 1]);
+    std::reverse(ans.begin() + beg, ans.end());
+    for (int i = 0; i < ans.size(); i++) {
+        s += std::to_string(ans[i]);
     }
-    return ans;
+    return s;
 }
 
 bool cmpPosSigns(big_integer const &a, big_integer const &b) {
@@ -437,8 +491,8 @@ int main() {
     freopen("tests.in", "r", stdin);
     std::cin >> p;
 //    std::cin >> q;
-//    const int N = 6;
-//    for (int i = 0; i < 6; i++) {
+//    const int N = 100;
+//    for (int i = 0; i < N; i++) {
 //        p *= q;
 //    }
 //    for (int i = 0; i < N; i++) {
