@@ -490,24 +490,21 @@ int main() {
     std::cout << clock() / 1000000.0 << std::endl;
     freopen("tests.in", "r", stdin);
     std::cin >> p;
-//    std::cin >> q;
-//    const int N = 100;
-//    for (int i = 0; i < N; i++) {
-//        p *= q;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p += p;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p /= 2;
-//    }
-//    //std::cout << p << std::endl;
-//    for (int i = 0; i < N; i++) {
-//        p /= q;
-//    }
-//    std::cout << p << std::endl;
-//    usi t = 2147483648;
-//    std::cout << (~t) << std::endl;
+    std::cin >> q;
+    const int N = 100;
+    for (int i = 0; i < N; i++) {
+        p *= q;
+    }
+    for (int i = 0; i < N; i++) {
+        p += p;
+    }
+    for (int i = 0; i < N; i++) {
+        p /= 2;
+    }
+    //std::cout << p << std::endl;
+    for (int i = 0; i < N; i++) {
+        p /= q;
+    }
     std::cout << p << std::endl;
     std::cout << clock() / 1000000.0 << std::endl;
     return 0;
