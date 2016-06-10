@@ -13,7 +13,7 @@ struct big_integer {
 
     big_integer(big_integer const &other);
 
-    big_integer(uint_fast64_t a);
+    big_integer(int_fast64_t a);
 
     explicit big_integer(std::string const &str);
 
@@ -67,7 +67,7 @@ struct big_integer {
 
     friend bool operator>=(big_integer const &a, big_integer const &b);
 
-    friend bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false;
+    friend bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false; if a > b return true;
 
     friend std::string to_string(big_integer const &a);
 

@@ -16,7 +16,7 @@ big_integer::big_integer(big_integer const &other) {
     sign = other.sign;
 }
 
-big_integer::big_integer(uint_fast64_t a) {
+big_integer::big_integer(int_fast64_t a) {
     number.clear();
     sign = a >= 0;
     if (a == 0) {
@@ -35,10 +35,10 @@ big_integer::big_integer(std::string const &str) {
     if (!sign) {
         s = str.substr(1, str.length() - 1);
     }
-    *this = 0;
     for (int i = 0; i < s.length(); i++) {
         *this *= 10;
-        *this += (s[i] - '0');
+        if (sign) *this += (s[i] - '0');
+        else *this -= (s[i] - '0');
     }
 }
 
@@ -78,6 +78,9 @@ big_integer &big_integer::operator+=(big_integer const &rhs) {
         *this = posThis;
         sign = saveSign;
     }
+    if (this->number.size() == 0 || (this->number.size() == 1 && this->number[0] == 0)) {
+        this->sign = true;
+    }
     return *this;
 }
 
@@ -101,13 +104,12 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
         }
         while (a.number.size() > 1 && a.number.back() == 0)
             a.number.pop_back();
-        if (*this < rhs) {
-            *this = a;
-            sign = false;
+        if (cmpPosSigns(*this, rhs)) {
+            sign = this->sign;
         } else {
-            *this = a;
-            sign = true;
+            sign = !this->sign;
         }
+        *this = a;
     } else {
         if (sign) {
             *this += b;
@@ -117,6 +119,7 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
             this->sign = false;
         }
     }
+    if (a == 0) this->sign = true;
     return *this;
 }
 
@@ -258,6 +261,9 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
     } else {
         this->sign = false;
     }
+    if (ans.size() == 0 || (ans.size() == 1 && ans[0] == 0)) {
+        this->sign = true;
+    }
     return *this;
 }
 
@@ -390,7 +396,7 @@ big_integer operator>>(big_integer a, int b) {
 bool operator==(big_integer const &a, big_integer const &b) {
     if (a.sign == b.sign) {
         if (a.number.size() == b.number.size()) {
-            for (long long i = 0; i < a.number.size(); i++) {
+            for (int i = 0; i < (int) a.number.size(); i++) {
                 if (a.number[i] != b.number[i]) return false;
             }
             return true;
@@ -441,6 +447,7 @@ std::string to_string(big_integer const &a) {
     big_integer cur = 0;
     big_integer ten = 10;
     std::vector<usi> ans;
+    if (b == 0) ans.push_back(0);
     while (b != 0) {
         cur = b % ten;
         ans.push_back(cur.number[0]);
@@ -491,21 +498,22 @@ int main() {
     freopen("tests.in", "r", stdin);
     std::cin >> p;
     std::cin >> q;
-    const int N = 100;
-    for (int i = 0; i < N; i++) {
-        p *= q;
-    }
-    for (int i = 0; i < N; i++) {
-        p += p;
-    }
-    for (int i = 0; i < N; i++) {
-        p /= 2;
-    }
-    //std::cout << p << std::endl;
-    for (int i = 0; i < N; i++) {
-        p /= q;
-    }
-    std::cout << p << std::endl;
+    big_integer res = p + q;
+//    const int N = 100;
+//    for (int i = 0; i < N; i++) {
+//        p *= q;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p += p;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= 2;
+//    }
+//    //std::cout << p << std::endl;
+//    for (int i = 0; i < N; i++) {
+//        p /= q;
+//    }
+    std::cout << (res) << std::endl;
     std::cout << clock() / 1000000.0 << std::endl;
     return 0;
 }
