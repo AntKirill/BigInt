@@ -29,7 +29,11 @@ struct big_integer {
 
     big_integer &operator/=(big_integer const &rhs);
 
+    big_integer &operator/=(int_fast32_t const x);
+
     big_integer &operator%=(big_integer const &rhs);
+
+    big_integer &operator%=(int_fast32_t const x);
 
     big_integer &operator&=(big_integer const &rhs);
 
@@ -92,7 +96,11 @@ big_integer operator*(big_integer a, big_integer const &b);
 
 big_integer operator/(big_integer a, big_integer const &b);
 
+big_integer operator/(big_integer a, int_fast32_t const x);
+
 big_integer operator%(big_integer a, big_integer const &b);
+
+big_integer operator%(big_integer a, int_fast32_t const x);
 
 big_integer operator&(big_integer a, big_integer const &b);
 

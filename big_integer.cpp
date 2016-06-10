@@ -334,8 +334,16 @@ big_integer operator/(big_integer a, big_integer const &b) {
     return a /= b;
 }
 
+big_integer operator/(big_integer a, int_fast32_t const x) {
+    return a /= x;
+}
+
 big_integer operator%(big_integer a, big_integer const &b) {
     return a %= b;
+}
+
+big_integer operator%(big_integer a, int_fast32_t const x) {
+    return a %= x;
 }
 
 big_integer operator&(big_integer a, big_integer const &b) {
@@ -417,7 +425,7 @@ std::string to_string(big_integer const &a) {
     while (b != 0) {
         cur = b % ten;
         ans.push_back(cur.number[0]);
-        b /= ten;
+        b /= 10;
     }
     std::reverse(ans.begin(), ans.end());
     for (int i = 0; i < ans.size(); i++) {
@@ -474,6 +482,41 @@ big_integer big_integer::mult(uint_fast32_t x) {
     while (a.number.size() > 1 && a.number.back() == 0)
         a.number.pop_back();
     return a;
+}
+
+big_integer &big_integer::operator/=(int_fast32_t const x) {
+    usi carry = 0;
+    int_fast32_t y = std::abs(x);
+    if (*this == 0) return *this;
+    bool xsign = (x == y);
+    for (int i = (int) this->number.size() - 1; i >= 0; --i) {
+        ll cur = (ll) this->number[i] + (ll) carry * actualBase;
+        this->number[i] = usi(cur / y);
+        carry = usi(cur % y);
+    }
+    while (this->number.size() > 1 && this->number.back() == 0)
+        this->number.pop_back();
+    if (this->sign == xsign) {
+        this->sign = true;
+    } else this->sign = false;
+    return *this;
+}
+
+big_integer &big_integer::operator%=(int_fast32_t const x) {
+    usi carry = 0;
+    int_fast32_t y = std::abs(x);
+    if (*this == 0) return *this;
+    bool xsign = (x == y);
+    for (int i = (int) this->number.size() - 1; i >= 0; --i) {
+        ll cur = (ll) this->number[i] + (ll) carry * actualBase;
+        this->number[i] = usi(cur / y);
+        carry = usi(cur % y);
+    }
+    big_integer newthis = carry;
+    if (newthis.sign == xsign) {
+        newthis.sign = true;
+    } else newthis.sign = false;
+    return newthis;
 }
 
 std::ostream &operator<<(std::ostream &s, big_integer const &a) {
