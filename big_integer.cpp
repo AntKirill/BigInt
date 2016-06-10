@@ -19,6 +19,7 @@ big_integer::big_integer(big_integer const &other) {
 big_integer::big_integer(int_fast64_t a) {
     number.clear();
     sign = a >= 0;
+    a = std::abs(a);
     if (a == 0) {
         number.push_back(0);
     }
@@ -109,17 +110,13 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
         } else {
             sign = !this->sign;
         }
-        *this = a;
     } else {
-        if (sign) {
-            *this += b;
-        } else {
-            a += b;
-            *this = a;
-            this->sign = false;
-        }
+        a += b;
     }
-    if (a == 0) this->sign = true;
+    this->number = a.number;
+    if (this->number.size() == 0 || (this->number.size() == 1 && this->number[0] == 0)) {
+        this->sign = true;
+    }
     return *this;
 }
 
@@ -220,12 +217,15 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
     std::vector<usi> ans;
     ans.resize(this->number.size() - rhs.number.size() + 1);
     big_integer curValue(*this);
+    curValue.sign = true;
     big_integer now(0);
+    big_integer divider(rhs);
+    divider.sign = true;
     for (int i = 0; i < ans.size(); i++) {
         ll l = 0, r = base + 1;
         while (r - l > 1) {
             ll m = (l + r) / 2;
-            now = usi(m) * rhs;
+            now = usi(m) * divider;
             std::reverse(now.number.begin(), now.number.end());
             for (int j = 0; j < ans.size() - i - 1; j++) {
                 now.number.push_back(0);
@@ -237,7 +237,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
                 r = m;
             }
         }
-        now = l * rhs;
+        now = l * divider;
         std::reverse(now.number.begin(), now.number.end());
         while (now.number.size() < curValue.number.size()) {
             now.number.push_back(0);
@@ -280,8 +280,19 @@ big_integer &big_integer::operator&=(big_integer const &rhs) {
 }
 
 big_integer &big_integer::operator|=(big_integer const &rhs) {
-    for (int i = 0; i < this->number.size(); i++) {
-        this->number[i] = this->number[i] | (i < rhs.number.size() ? rhs.number[i] : 0);
+    if (!this->sign && rhs.sign) {
+        *this = ~((((~(*this)) + 1) | rhs) - 1);
+        *this = -*this;
+    } else if (this->sign && !rhs.sign) {
+        *this = ~((*this | (~rhs + 1)) - 1);
+        *this = -*this;
+    } else if (!this->sign && !rhs.sign) {
+        *this = ~(((~*this + 1) | (~rhs + 1)) - 1);
+        *this = -*this;
+    } else {
+        for (int i = 0; i < (int) this->number.size(); i++) {
+            this->number[i] = this->number[i] | (i < rhs.number.size() ? rhs.number[i] : 0);
+        }
     }
     return *this;
 }
@@ -326,7 +337,10 @@ big_integer big_integer::operator+() const {
 
 big_integer big_integer::operator-() const {
     big_integer a = *this;
-    a.sign = !sign;
+    a.sign = true;
+    if (a != 0) {
+        a.sign = !sign;
+    }
     return a;
 }
 
@@ -444,6 +458,7 @@ std::string to_string(big_integer const &a) {
         beg++;
     }
     big_integer b = a;
+    b.sign = true;
     big_integer cur = 0;
     big_integer ten = 10;
     std::vector<usi> ans;
@@ -453,7 +468,7 @@ std::string to_string(big_integer const &a) {
         ans.push_back(cur.number[0]);
         b /= ten;
     }
-    std::reverse(ans.begin() + beg, ans.end());
+    std::reverse(ans.begin(), ans.end());
     for (int i = 0; i < ans.size(); i++) {
         s += std::to_string(ans[i]);
     }
@@ -498,7 +513,7 @@ int main() {
     freopen("tests.in", "r", stdin);
     std::cin >> p;
     std::cin >> q;
-    big_integer res = p + q;
+    big_integer res = -p % q;
 //    const int N = 100;
 //    for (int i = 0; i < N; i++) {
 //        p *= q;
@@ -513,7 +528,7 @@ int main() {
 //    for (int i = 0; i < N; i++) {
 //        p /= q;
 //    }
-    std::cout << (res) << std::endl;
+    std::cout << (p | q) << std::endl;
     std::cout << clock() / 1000000.0 << std::endl;
     return 0;
 }
