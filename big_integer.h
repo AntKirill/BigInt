@@ -55,6 +55,8 @@ struct big_integer {
 
     big_integer operator--(int);
 
+    big_integer mult(uint_fast32_t x);
+
     friend bool operator==(big_integer const &a, big_integer const &b);
 
     friend bool operator!=(big_integer const &a, big_integer const &b);
