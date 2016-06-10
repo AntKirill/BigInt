@@ -330,6 +330,10 @@ big_integer operator*(big_integer a, big_integer const &b) {
     return a *= b;
 }
 
+big_integer operator*(big_integer a, int_fast32_t const x) {
+    return a *= x;
+}
+
 big_integer operator/(big_integer a, big_integer const &b) {
     return a /= b;
 }
@@ -518,6 +522,20 @@ big_integer &big_integer::operator%=(int_fast32_t const x) {
     } else newthis.sign = false;
     return newthis;
 }
+
+big_integer &big_integer::operator*=(int_fast32_t const x) {
+    if (*this == 0 || x == 0) {
+        *this = 0;
+        return *this;
+    }
+    bool xsign = (x == std::abs(x));
+    if (this->sign == xsign) {
+        this->sign = true;
+    } else this->sign = false;
+    *this = this->mult(usi(std::abs(x)));
+    return *this;
+}
+
 
 std::ostream &operator<<(std::ostream &s, big_integer const &a) {
     return s << to_string(a);
