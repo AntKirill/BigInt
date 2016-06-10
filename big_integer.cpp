@@ -1,5 +1,4 @@
 #include "big_integer.h"
-
 #include <bits/stdc++.h>
 
 typedef uint_fast32_t usi;
@@ -273,33 +272,55 @@ big_integer &big_integer::operator%=(big_integer const &rhs) {
 }
 
 big_integer &big_integer::operator&=(big_integer const &rhs) {
+    bool thissign = sign;
+    big_integer b = rhs;
+    if (!sign) {
+        this->extracode();
+    }
+    if (!rhs.sign) {
+        b.extracode();
+    }
     for (int i = 0; i < this->number.size(); i++) {
-        this->number[i] = this->number[i] & (i < rhs.number.size() ? rhs.number[i] : 0);
+        this->number[i] = this->number[i] & (i < b.number.size() ? b.number[i] : 0);
+    }
+    if (!thissign && !rhs.sign) {
+        this->normalcode();
     }
     return *this;
 }
 
 big_integer &big_integer::operator|=(big_integer const &rhs) {
-    if (!this->sign && rhs.sign) {
-        *this = ~((((~(*this)) + 1) | rhs) - 1);
-        *this = -*this;
-    } else if (this->sign && !rhs.sign) {
-        *this = ~((*this | (~rhs + 1)) - 1);
-        *this = -*this;
-    } else if (!this->sign && !rhs.sign) {
-        *this = ~(((~*this + 1) | (~rhs + 1)) - 1);
-        *this = -*this;
-    } else {
-        for (int i = 0; i < (int) this->number.size(); i++) {
-            this->number[i] = this->number[i] | (i < rhs.number.size() ? rhs.number[i] : 0);
-        }
+    bool thissign = sign;
+    big_integer b = rhs;
+    if (!sign) {
+        this->extracode();
+    }
+    if (!rhs.sign) {
+        b.extracode();
+    }
+    for (int i = 0; i < this->number.size(); i++) {
+        this->number[i] = this->number[i] | (i < b.number.size() ? b.number[i] : 0);
+    }
+    if (!thissign || !rhs.sign) {
+        this->normalcode();
     }
     return *this;
 }
 
 big_integer &big_integer::operator^=(big_integer const &rhs) {
+    bool thissign = sign;
+    big_integer b = rhs;
+    if (!sign) {
+        this->extracode();
+    }
+    if (!rhs.sign) {
+        b.extracode();
+    }
     for (int i = 0; i < this->number.size(); i++) {
-        this->number[i] = this->number[i] ^ (i < rhs.number.size() ? rhs.number[i] : 0);
+        this->number[i] = this->number[i] ^ (i < b.number.size() ? b.number[i] : 0);
+    }
+    if (!thissign || !rhs.sign) {
+        this->normalcode();
     }
     return *this;
 }
@@ -318,12 +339,16 @@ big_integer &big_integer::operator<<=(int rhs) {
 
 big_integer &big_integer::operator>>=(int rhs) {
     std::reverse(this->number.begin(), this->number.end());
+    bool thissigne = sign;
     for (int i = 0; i < rhs / basepow; i++) {
         this->number.pop_back();
     }
     std::reverse(this->number.begin(), this->number.end());
     for (int i = 0; i < rhs % basepow; i++) {
         *this /= 2;
+    }
+    if (!thissigne) {
+        *this -= 1;
     }
     return *this;
 }
@@ -493,6 +518,25 @@ bool cmpPosSigns(big_integer const &a, big_integer const &b) {
     return false;
 }
 
+big_integer& big_integer::extracode() {
+    for (int i = 0; i < this->number.size(); i++) {
+        this->number[i] = (~(this->number[i]) & this->base);
+    }
+    this->sign = true;
+    *this += 1;
+    return *this;
+}
+
+big_integer &big_integer::normalcode() {
+    *this -= 1;
+    this->sign = false;
+    for (int i = 0; i< this->number.size(); i++) {
+        this->number[i] = (~(this->number[i]) & this->base);
+    }
+    return *this;
+}
+
+
 std::ostream &operator<<(std::ostream &s, big_integer const &a) {
     return s << to_string(a);
 }
@@ -513,7 +557,7 @@ int main() {
     freopen("tests.in", "r", stdin);
     std::cin >> p;
     std::cin >> q;
-    big_integer res = -p % q;
+//    big_integer res = -p % q;
 //    const int N = 100;
 //    for (int i = 0; i < N; i++) {
 //        p *= q;
@@ -528,7 +572,7 @@ int main() {
 //    for (int i = 0; i < N; i++) {
 //        p /= q;
 //    }
-    std::cout << (p | q) << std::endl;
+    std::cout << ((p) >> 2) << std::endl;
     std::cout << clock() / 1000000.0 << std::endl;
     return 0;
 }
