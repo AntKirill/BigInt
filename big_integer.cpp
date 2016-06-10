@@ -423,11 +423,10 @@ std::string to_string(big_integer const &a) {
     big_integer b = a;
     b.sign = true;
     big_integer cur = 0;
-    big_integer ten = 10;
     std::vector<usi> ans;
     if (b == 0) ans.push_back(0);
     while (b != 0) {
-        cur = b % ten;
+        cur = b % 10;
         ans.push_back(cur.number[0]);
         b /= 10;
     }
@@ -506,7 +505,7 @@ big_integer &big_integer::operator/=(int_fast32_t const x) {
     return *this;
 }
 
-big_integer &big_integer::operator%=(int_fast32_t const x) {
+big_integer big_integer::operator%=(int_fast32_t const x) {
     usi carry = 0;
     int_fast32_t y = std::abs(x);
     if (*this == 0) return *this;
