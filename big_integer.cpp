@@ -482,9 +482,7 @@ big_integer &big_integer::operator/=(int_fast32_t const x) {
     }
     while (this->number.size() > 1 && this->number.back() == 0)
         this->number.pop_back();
-    if (this->sign == xsign) {
-        this->sign = true;
-    } else this->sign = false;
+    afterMultSignValidation(xsign);
     return *this;
 }
 
@@ -498,10 +496,9 @@ big_integer big_integer::operator%=(int_fast32_t const x) {
         this->number[i] = usi(cur / y);
         carry = usi(cur % y);
     }
+    afterMultSignValidation(xsign);
     big_integer newthis = carry;
-    if (newthis.sign == xsign) {
-        newthis.sign = true;
-    } else newthis.sign = false;
+    newthis.sign = this->sign;
     return newthis;
 }
 
@@ -539,27 +536,27 @@ int main() {
 
     //q = big_integer("8963214782301");
     //p = big_integer("789456235896214587");
-    std::cout << clock() / 1000000.0 << std::endl;
+    std::cout << clock() / 1000.0 << std::endl;
     freopen("tests.in", "r", stdin);
     std::cin >> p;
     std::cin >> q;
 //    big_integer res = -p % q;
-//    const int N = 100;
-//    for (int i = 0; i < N; i++) {
-//        p *= q;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p += p;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p /= 2;
-//    }
-//    //std::cout << p << std::endl;
-//    for (int i = 0; i < N; i++) {
-//        p /= q;
-//    }
-    p *= q;
-    std::cout << (p | q) << std::endl;
-    std::cout << clock() / 1000000.0 << std::endl;
+    const int N = 100;
+    for (int i = 0; i < N; i++) {
+        p *= q;
+    }
+    for (int i = 0; i < N; i++) {
+        p += p;
+    }
+    for (int i = 0; i < N; i++) {
+        p /= 2;
+    }
+    //std::cout << p << std::endl;
+    for (int i = 0; i < N; i++) {
+        p /= q;
+    }
+    //p *= q;
+    std::cout << p << std::endl;
+    std::cout << clock() / 1000.0 << std::endl;
     return 0;
 }
