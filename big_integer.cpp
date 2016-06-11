@@ -198,57 +198,40 @@ big_integer &big_integer::operator%=(big_integer const &rhs) {
 }
 
 big_integer &big_integer::operator&=(big_integer const &rhs) {
-    bool thissign = sign;
-    big_integer b = rhs;
-    if (!sign) {
-        this->extracode();
-    }
-    if (!rhs.sign) {
-        b.extracode();
-    }
-    for (int i = 0; i < this->number.size(); i++) {
-        this->number[i] = this->number[i] & (i < b.number.size() ? b.number[i] : 0);
-    }
-    if (!thissign && !rhs.sign) {
-        this->normalcode();
-    }
+    abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a & b; },
+                           [](bool x, bool y) -> bool { return x & y; });
     return *this;
 }
 
 big_integer &big_integer::operator|=(big_integer const &rhs) {
-    bool thissign = sign;
-    big_integer b = rhs;
-    if (!sign) {
-        this->extracode();
-    }
-    if (!rhs.sign) {
-        b.extracode();
-    }
-    for (int i = 0; i < this->number.size(); i++) {
-        this->number[i] = this->number[i] | (i < b.number.size() ? b.number[i] : 0);
-    }
-    if (!thissign || !rhs.sign) {
-        this->normalcode();
-    }
+    abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a | b; },
+                           [](bool x, bool y) -> bool { return x | y; });
     return *this;
 }
 
 big_integer &big_integer::operator^=(big_integer const &rhs) {
-    bool thissign = sign;
-    big_integer b = rhs;
-    if (!sign) {
-        this->extracode();
+    abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a ^ b; },
+                           [](bool x, bool y) -> bool { return x | y; });
+    return *this;
+}
+
+void abstractLogicOperation(big_integer &a, big_integer b,
+                            uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
+                            bool (*check)(bool x, bool y)) {
+    bool asign = a.sign;
+    bool bsign = b.sign;
+    if (!asign) {
+        a.extracode();
     }
-    if (!rhs.sign) {
+    if (!b.sign) {
         b.extracode();
     }
-    for (int i = 0; i < this->number.size(); i++) {
-        this->number[i] = this->number[i] ^ (i < b.number.size() ? b.number[i] : 0);
+    for (int i = 0; i < a.number.size(); i++) {
+        a.number[i] = logicFunc(a.number[i], (i < b.number.size() ? b.number[i] : 0));
     }
-    if (!thissign || !rhs.sign) {
-        this->normalcode();
+    if (check(!asign, !bsign)) {
+        a.normalcode();
     }
-    return *this;
 }
 
 big_integer &big_integer::operator<<=(int rhs) {
@@ -572,7 +555,7 @@ int main() {
 //        p /= q;
 //    }
     p *= q;
-    std::cout << p << std::endl;
+    std::cout << (p | q) << std::endl;
     std::cout << clock() / 1000000.0 << std::endl;
     return 0;
 }

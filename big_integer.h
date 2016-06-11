@@ -116,6 +116,10 @@ big_integer operator<<(big_integer a, int b);
 
 big_integer operator>>(big_integer a, int b);
 
+void abstractLogicOperation(big_integer &a, big_integer b,
+                                   uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
+                                   bool (*check)(bool x, bool y));
+
 bool operator==(big_integer const &a, big_integer const &b);
 
 bool operator!=(big_integer const &a, big_integer const &b);
