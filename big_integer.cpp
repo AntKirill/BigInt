@@ -35,7 +35,7 @@ big_integer::big_integer(std::string const &str) {
     if (!sign) {
         s = str.substr(1, str.length() - 1);
     }
-    for (int i = 0; i < s.length(); i++) {
+    for (size_t i = 0; i < s.length(); i++) {
         *this *= 10;
         if (sign) *this += (s[i] - '0');
         else *this -= (s[i] - '0');
@@ -144,14 +144,14 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
     big_integer now(0);
     big_integer divider(rhs);
     divider.sign = true;
-    for (int i = 0; i < ans.size(); i++) {
+    for (size_t i = 0; i < ans.size(); i++) {
         ll l = 0, r = base + 1;
         while (r - l > 1) {
             ll m = (l + r) / 2;
             now = divider.mult(usi(m));
             if (ans.size() - i - 1 > 0) {
                 std::reverse(now.number.begin(), now.number.end());
-                for (int j = 0; j < ans.size() - i - 1; j++) {
+                for (size_t j = 0; j < ans.size() - i - 1; j++) {
                     now.number.push_back(0);
                 }
                 std::reverse(now.number.begin(), now.number.end());
@@ -226,7 +226,7 @@ void abstractLogicOperation(big_integer &a, big_integer b,
     if (!b.sign) {
         b.extracode();
     }
-    for (int i = 0; i < a.number.size(); i++) {
+    for (usi i = 0; i < (usi) a.number.size(); i++) {
         a.number[i] = logicFunc(a.number[i], (i < b.number.size() ? b.number[i] : 0));
     }
     if (check(!asign, !bsign)) {
@@ -414,7 +414,7 @@ std::string to_string(big_integer const &a) {
         b /= 10;
     }
     std::reverse(ans.begin(), ans.end());
-    for (int i = 0; i < ans.size(); i++) {
+    for (size_t i = 0; i < ans.size(); i++) {
         s += std::to_string(ans[i]);
     }
     return s;
@@ -439,7 +439,7 @@ bool cmpPosSigns(big_integer const &a, big_integer const &b) {
 }
 
 big_integer &big_integer::extracode() {
-    for (int i = 0; i < this->number.size(); i++) {
+    for (size_t i = 0; i < this->number.size(); i++) {
         this->number[i] = (~(this->number[i]) & this->base);
     }
     this->sign = true;
@@ -450,7 +450,7 @@ big_integer &big_integer::extracode() {
 big_integer &big_integer::normalcode() {
     *this -= 1;
     this->sign = false;
-    for (int i = 0; i < this->number.size(); i++) {
+    for (size_t i = 0; i < this->number.size(); i++) {
         this->number[i] = (~(this->number[i]) & this->base);
     }
     return *this;
@@ -511,11 +511,15 @@ big_integer &big_integer::operator*=(int_fast32_t const x) {
         return *this;
     }
     bool xsign = (x == std::abs(x));
+    afterMultSignValidation(xsign);
+    *this = this->mult(usi(std::abs(x)));
+    return *this;
+}
+
+void big_integer::afterMultSignValidation(bool xsign) {
     if (this->sign == xsign) {
         this->sign = true;
     } else this->sign = false;
-    *this = this->mult(usi(std::abs(x)));
-    return *this;
 }
 
 
