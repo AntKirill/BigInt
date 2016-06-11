@@ -530,33 +530,33 @@ void operator>>(std::istream &s, big_integer &a) {
     a = big_integer(str);
 }
 
-int main() {
-    big_integer p;
-    big_integer q;
-
-    //q = big_integer("8963214782301");
-    //p = big_integer("789456235896214587");
-    std::cout << clock() / 1000.0 << std::endl;
-    freopen("tests.in", "r", stdin);
-    std::cin >> p;
-    std::cin >> q;
-//    big_integer res = -p % q;
-    const int N = 100;
-    for (int i = 0; i < N; i++) {
-        p *= q;
-    }
-    for (int i = 0; i < N; i++) {
-        p += p;
-    }
-    for (int i = 0; i < N; i++) {
-        p /= 2;
-    }
-    //std::cout << p << std::endl;
-    for (int i = 0; i < N; i++) {
-        p /= q;
-    }
-    //p *= q;
-    std::cout << p << std::endl;
-    std::cout << clock() / 1000.0 << std::endl;
-    return 0;
-}
+//int main() {
+//    big_integer p;
+//    big_integer q;
+//
+//    //q = big_integer("8963214782301");
+//    //p = big_integer("789456235896214587");
+//    std::cout << clock() / 1000.0 << std::endl;
+//    freopen("tests.in", "r", stdin);
+//    std::cin >> p;
+//    std::cin >> q;
+////    big_integer res = -p % q;
+//    const int N = 100;
+//    for (int i = 0; i < N; i++) {
+//        p *= q;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p += p;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= 2;
+//    }
+//    //std::cout << p << std::endl;
+//    for (int i = 0; i < N; i++) {
+//        p /= q;
+//    }
+//    //p *= q;
+//    std::cout << p << std::endl;
+//    std::cout << clock() / 1000.0 << std::endl;
+//    return 0;
+//}
