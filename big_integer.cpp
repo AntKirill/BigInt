@@ -122,9 +122,9 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
 big_integer &big_integer::operator*=(big_integer const &rhs) {
     big_integer ans;
     ans.number.resize(number.size() + rhs.number.size());
-    for (size_t i = 0; i < number.size(); ++i)
-        for (ll j = 0, carry = 0; j < (int) rhs.number.size() || carry; ++j) {
-            ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < (usi) rhs.number.size() ? rhs.number[j] : 0) +
+    for (size_t i = 0; i < number.size(); i++)
+        for (size_t j = 0, carry = 0; j < rhs.number.size() || carry; j++) {
+            ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < rhs.number.size() ? rhs.number[j] : 0) +
                      carry;
             ans.number[i + j] = usi((cur % actualBase));
             carry = usi((cur / actualBase));
@@ -226,7 +226,7 @@ void abstractLogicOperation(big_integer &a, big_integer b,
     if (!b.sign) {
         b.extracode();
     }
-    for (usi i = 0; i < (usi) a.number.size(); i++) {
+    for (size_t i = 0; i < a.number.size(); i++) {
         a.number[i] = logicFunc(a.number[i], (i < b.number.size() ? b.number[i] : 0));
     }
     if (check(!asign, !bsign)) {
