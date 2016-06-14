@@ -215,9 +215,9 @@ big_integer &big_integer::operator^=(big_integer const &rhs) {
     return *this;
 }
 
-void abstractLogicOperation(big_integer &a, big_integer b,
-                            uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
-                            bool (*check)(bool x, bool y)) {
+static void abstractLogicOperation(big_integer &a, big_integer b,
+                                   uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
+                                   bool (*check)(bool x, bool y)) {
     bool asign = a.sign;
     bool bsign = b.sign;
     if (!asign) {
@@ -236,11 +236,11 @@ void abstractLogicOperation(big_integer &a, big_integer b,
 
 big_integer &big_integer::operator<<=(int rhs) {
     std::reverse(this->number.begin(), this->number.end());
-    for (int i = 0; i < rhs / this->basepow; i++) {
+    for (int i = 0; i < rhs / basepow; i++) {
         this->number.push_back(0);
     }
     std::reverse(this->number.begin(), this->number.end());
-    for (int i = 0; i < rhs % this->basepow; i++) {
+    for (int i = 0; i < rhs % basepow; i++) {
         *this *= 2;
     }
     return *this;
@@ -440,7 +440,7 @@ bool cmpPosSigns(big_integer const &a, big_integer const &b) {
 
 big_integer &big_integer::extracode() {
     for (size_t i = 0; i < this->number.size(); i++) {
-        this->number[i] = (~(this->number[i]) & this->base);
+        this->number[i] = (~(this->number[i]) & base);
     }
     this->sign = true;
     *this += 1;
@@ -451,7 +451,7 @@ big_integer &big_integer::normalcode() {
     *this -= 1;
     this->sign = false;
     for (size_t i = 0; i < this->number.size(); i++) {
-        this->number[i] = (~(this->number[i]) & this->base);
+        this->number[i] = (~(this->number[i]) & base);
     }
     return *this;
 }
