@@ -73,8 +73,6 @@ struct big_integer {
 
     friend bool operator>=(big_integer const &a, big_integer const &b);
 
-    //friend bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false; if a > b return true;
-
     friend std::string to_string(big_integer const &a);
 };
 
@@ -115,8 +113,6 @@ bool operator>(big_integer const &a, big_integer const &b);
 bool operator<=(big_integer const &a, big_integer const &b);
 
 bool operator>=(big_integer const &a, big_integer const &b);
-
-//bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false;
 
 std::string to_string(big_integer const &a);
 

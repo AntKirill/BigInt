@@ -184,20 +184,26 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
     return *this;
 }
 
+//static usi _ans[(1 << 64)];
+static big_integer _ans;
+
 big_integer &big_integer::operator*=(big_integer const &rhs) {
-    big_integer ans;
-    ans.number.resize(number.size() + rhs.number.size());
+    //_ans.number.resize(number.size() + rhs.number.size());
+    if (number.size() + rhs.number.size() > _ans.number.size()) _ans.number.resize(number.size() + rhs.number.size());
+    memset(&_ans.number[0], 0, _ans.number.size() * sizeof(usi));
     for (size_t i = 0; i < number.size(); i++)
         for (size_t j = 0, carry = 0; j < rhs.number.size() || carry; j++) {
-            ll cur = (ll) ans.number[i + j] + (ll) number[i] * (ll) (j < rhs.number.size() ? rhs.number[j] : 0) +
+            ll cur = (ll) _ans.number[i + j] + (ll) number[i] * (ll) (j < rhs.number.size() ? rhs.number[j] : 0) +
                      carry;
-            ans.number[i + j] = usi((cur % actualBase));
+            _ans.number[i + j] = usi((cur % actualBase));
             carry = usi((cur / actualBase));
         }
-    while (ans.number.size() > 1 && ans.number.back() == 0)
-        ans.number.pop_back();
-    if (sign != rhs.sign) ans.sign = false;
-    *this = ans;
+//    number.resize(_ans.number.size());
+//    memcpy(&number[0], &_ans.number[0], sizeof(usi) *_ans.number.size());
+    number = _ans.number;
+    while (number.size() > 1 && number.back() == 0)
+        number.pop_back();
+    sign = afterMultSignValidation(sign, rhs.sign);
     return *this;
 }
 
@@ -544,7 +550,7 @@ void operator>>(std::istream &s, big_integer &a) {
 //    std::cin >> p;
 //    std::cin >> q;
 ////    big_integer res = -p % q;
-//    const int N = 100;
+//    const int N = 1000;
 //    for (int i = 0; i < N; i++) {
 //        p *= q;
 //    }
