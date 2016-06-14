@@ -4,6 +4,71 @@
 typedef uint_fast32_t usi;
 typedef int_fast64_t ll;
 
+static const uint_fast32_t base = (uint_fast32_t) (1 << 31) - 1;
+static const uint_fast64_t actualBase = (uint_fast64_t) base + 1;
+static const int basepow = 31;
+
+static inline bool afterMultSignValidation(bool thissign, bool xsign) {
+    if (thissign == xsign) {
+        thissign = true;
+    } else thissign = false;
+    return thissign;
+}
+
+
+static inline void extracode(big_integer &a) {
+    for (size_t i = 0; i < a.number.size(); i++) {
+        a.number[i] = (~(a.number[i]) & base);
+    }
+    a.sign = true;
+    a += 1;
+}
+
+static inline void normalcode(big_integer &a) {
+    a -= 1;
+    a.sign = false;
+    for (size_t i = 0; i < a.number.size(); i++) {
+        a.number[i] = (~(a.number[i]) & base);
+    }
+}
+
+static void abstractLogicOperation(big_integer &a, big_integer b,
+                                   uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
+                                   bool (*check)(bool x, bool y)) {
+    bool asign = a.sign;
+    bool bsign = b.sign;
+    if (!asign) {
+        extracode(a);
+    }
+    if (!b.sign) {
+        extracode(b);
+    }
+    for (size_t i = 0; i < a.number.size(); i++) {
+        a.number[i] = logicFunc(a.number[i], (i < b.number.size() ? b.number[i] : 0));
+    }
+    if (check(!asign, !bsign)) {
+        normalcode(a);
+    }
+}
+
+static bool cmpPosSigns(big_integer const &a, big_integer const &b) { //if a == b return false; if a > b return true;
+    if (a.number.size() > b.number.size()) {
+        return true;
+    } else if (a.number.size() < b.number.size()) {
+        return false;
+    } else {
+        for (int i = (int) a.number.size() - 1; i >= 0; i--) {
+            if (a.number[i] > b.number[i]) {
+                return true;
+            }
+            if (a.number[i] < b.number[i]) {
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
 big_integer::big_integer() {
     number.clear();
     number.push_back(0);
@@ -136,6 +201,20 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     return *this;
 }
 
+static big_integer mult(const big_integer &b, uint_fast32_t x) {
+    ll carry = 0;
+    big_integer a = b;
+    a.number.push_back(0);
+    for (size_t i = 0; i < a.number.size() || carry; i++) {
+        ll cur = carry + (ll) a.number[i] * x;
+        a.number[i] = (usi) (cur % actualBase);
+        carry = usi(cur / actualBase);
+    }
+    while (a.number.size() > 1 && a.number.back() == 0)
+        a.number.pop_back();
+    return a;
+}
+
 big_integer &big_integer::operator/=(big_integer const &rhs) {
     std::vector<usi> ans;
     ans.resize(this->number.size() - rhs.number.size() + 1);
@@ -148,7 +227,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
         ll l = 0, r = base + 1;
         while (r - l > 1) {
             ll m = (l + r) / 2;
-            now = divider.mult(usi(m));
+            now = mult(divider, usi(m));
             if (ans.size() - i - 1 > 0) {
                 std::reverse(now.number.begin(), now.number.end());
                 for (size_t j = 0; j < ans.size() - i - 1; j++) {
@@ -213,25 +292,6 @@ big_integer &big_integer::operator^=(big_integer const &rhs) {
     abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a ^ b; },
                            [](bool x, bool y) -> bool { return x | y; });
     return *this;
-}
-
-static void abstractLogicOperation(big_integer &a, big_integer b,
-                                   uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
-                                   bool (*check)(bool x, bool y)) {
-    bool asign = a.sign;
-    bool bsign = b.sign;
-    if (!asign) {
-        a.extracode();
-    }
-    if (!b.sign) {
-        b.extracode();
-    }
-    for (size_t i = 0; i < a.number.size(); i++) {
-        a.number[i] = logicFunc(a.number[i], (i < b.number.size() ? b.number[i] : 0));
-    }
-    if (check(!asign, !bsign)) {
-        a.normalcode();
-    }
 }
 
 big_integer &big_integer::operator<<=(int rhs) {
@@ -420,56 +480,6 @@ std::string to_string(big_integer const &a) {
     return s;
 }
 
-bool cmpPosSigns(big_integer const &a, big_integer const &b) {
-    if (a.number.size() > b.number.size()) {
-        return true;
-    } else if (a.number.size() < b.number.size()) {
-        return false;
-    } else {
-        for (int i = (int) a.number.size() - 1; i >= 0; i--) {
-            if (a.number[i] > b.number[i]) {
-                return true;
-            }
-            if (a.number[i] < b.number[i]) {
-                return false;
-            }
-        }
-    }
-    return false;
-}
-
-big_integer &big_integer::extracode() {
-    for (size_t i = 0; i < this->number.size(); i++) {
-        this->number[i] = (~(this->number[i]) & base);
-    }
-    this->sign = true;
-    *this += 1;
-    return *this;
-}
-
-big_integer &big_integer::normalcode() {
-    *this -= 1;
-    this->sign = false;
-    for (size_t i = 0; i < this->number.size(); i++) {
-        this->number[i] = (~(this->number[i]) & base);
-    }
-    return *this;
-}
-
-big_integer big_integer::mult(uint_fast32_t x) {
-    ll carry = 0;
-    big_integer a = *this;
-    a.number.push_back(0);
-    for (size_t i = 0; i < a.number.size() || carry; i++) {
-        ll cur = carry + (ll) a.number[i] * x;
-        a.number[i] = (usi) (cur % actualBase);
-        carry = usi(cur / actualBase);
-    }
-    while (a.number.size() > 1 && a.number.back() == 0)
-        a.number.pop_back();
-    return a;
-}
-
 big_integer &big_integer::operator/=(int_fast32_t const x) {
     usi carry = 0;
     int_fast32_t y = std::abs(x);
@@ -482,7 +492,7 @@ big_integer &big_integer::operator/=(int_fast32_t const x) {
     }
     while (this->number.size() > 1 && this->number.back() == 0)
         this->number.pop_back();
-    afterMultSignValidation(xsign);
+    this->sign = afterMultSignValidation(this->sign, xsign);
     return *this;
 }
 
@@ -496,7 +506,7 @@ big_integer big_integer::operator%=(int_fast32_t const x) {
         this->number[i] = usi(cur / y);
         carry = usi(cur % y);
     }
-    afterMultSignValidation(xsign);
+    this->sign = afterMultSignValidation(this->sign, xsign);
     big_integer newthis = carry;
     newthis.sign = this->sign;
     return newthis;
@@ -508,17 +518,10 @@ big_integer &big_integer::operator*=(int_fast32_t const x) {
         return *this;
     }
     bool xsign = (x == std::abs(x));
-    afterMultSignValidation(xsign);
-    *this = this->mult(usi(std::abs(x)));
+    this->sign = afterMultSignValidation(this->sign, xsign);
+    this->number = mult(*this, usi(std::abs(x))).number;
     return *this;
 }
-
-void big_integer::afterMultSignValidation(bool xsign) {
-    if (this->sign == xsign) {
-        this->sign = true;
-    } else this->sign = false;
-}
-
 
 std::ostream &operator<<(std::ostream &s, big_integer const &a) {
     return s << to_string(a);

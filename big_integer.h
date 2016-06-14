@@ -61,8 +61,6 @@ struct big_integer {
 
     big_integer operator--(int);
 
-    big_integer mult(uint_fast32_t x);
-
     friend bool operator==(big_integer const &a, big_integer const &b);
 
     friend bool operator!=(big_integer const &a, big_integer const &b);
@@ -75,22 +73,10 @@ struct big_integer {
 
     friend bool operator>=(big_integer const &a, big_integer const &b);
 
-    friend bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false; if a > b return true;
+    //friend bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false; if a > b return true;
 
     friend std::string to_string(big_integer const &a);
-
-    big_integer &extracode();
-
-    big_integer &normalcode();
-
-private:
-
-    inline void afterMultSignValidation(bool xsign);
 };
-
-static const uint_fast32_t base = (uint_fast32_t) (1 << 31) - 1;
-static const uint_fast64_t actualBase = (uint_fast64_t) base + 1;
-static const int basepow = 31;
 
 big_integer operator+(big_integer a, big_integer const &b);
 
@@ -118,10 +104,6 @@ big_integer operator<<(big_integer a, int b);
 
 big_integer operator>>(big_integer a, int b);
 
-static void abstractLogicOperation(big_integer &a, big_integer b,
-                                   uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
-                                   bool (*check)(bool x, bool y));
-
 bool operator==(big_integer const &a, big_integer const &b);
 
 bool operator!=(big_integer const &a, big_integer const &b);
@@ -134,7 +116,7 @@ bool operator<=(big_integer const &a, big_integer const &b);
 
 bool operator>=(big_integer const &a, big_integer const &b);
 
-bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false;
+//bool cmpPosSigns(big_integer const &a, big_integer const &b); //if a == b return false;
 
 std::string to_string(big_integer const &a);
 
