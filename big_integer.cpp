@@ -39,6 +39,15 @@ static inline void normalcode(big_integer &a) {
     }
 }
 
+static inline void check_zerodiv(big_integer const &a) {
+    if (a == 0) throw std::string("Devising by zero\n");
+}
+
+static void check_zerodiv(int_fast32_t a) {
+    if (a == 0) throw std::string("Devising by zero\n");
+}
+
+
 static big_integer &abstractLogicOperation(big_integer &a, big_integer b,
                                            uint_fast32_t (*logicFunc)(uint_fast32_t, uint_fast32_t),
                                            bool (*check)(bool, bool)) {
@@ -306,13 +315,23 @@ static big_integer &divWithModBig(big_integer &th, big_integer const &rhs, bool 
 }
 
 big_integer &big_integer::operator/=(big_integer const &rhs) {
-    return divWithModBig(*this, rhs, true);
+    try {
+        check_zerodiv(rhs);
+        return divWithModBig(*this, rhs, true);
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer &big_integer::operator%=(big_integer const &rhs) {
 //    *this -= rhs * (*this / rhs);
 //    return *this;
-    return divWithModBig(*this, rhs, false);
+    try {
+        check_zerodiv(rhs);
+        return divWithModBig(*this, rhs, false);
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer &big_integer::operator&=(big_integer const &rhs) {
@@ -413,19 +432,39 @@ big_integer operator*(big_integer a, int_fast32_t const x) {
 }
 
 big_integer operator/(big_integer a, big_integer const &b) {
-    return a /= b;
+    try {
+        a /= b;
+        return a;
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer operator/(big_integer a, int_fast32_t const x) {
-    return a /= x;
+    try {
+        a /= x;
+        return a;
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer operator%(big_integer a, big_integer const &b) {
-    return a %= b;
+    try {
+        a %= b;
+        return a;
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer operator%(big_integer a, int_fast32_t const x) {
-    return a %= x;
+    try {
+        a %= x;
+        return a;
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer operator&(big_integer a, big_integer const &b) {
@@ -547,11 +586,21 @@ static inline big_integer &divWithMod(big_integer &th, int_fast32_t const x, boo
 }
 
 big_integer &big_integer::operator/=(int_fast32_t const x) {
-    return divWithMod(*this, x, true);
+    try {
+        check_zerodiv(x);
+        return divWithMod(*this, x, true);
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer &big_integer::operator%=(int_fast32_t const x) {
-    return divWithMod(*this, x, false);
+    try {
+        check_zerodiv(x);
+        return divWithMod(*this, x, false);
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer &big_integer::operator*=(int_fast32_t const x) {
@@ -582,29 +631,33 @@ void operator>>(std::istream &s, big_integer &a) {
     a = big_integer(str);
 }
 
-//int main() {
-//    big_integer p;
-//    big_integer q;
-//    std::cout << clock() / 1000.0 << std::endl;
-//    freopen("tests.in", "r", stdin);
-//    std::cin >> p;
-//    std::cin >> q;
-//
-//    const int N = 1000;
-//    for (int i = 0; i < N; i++) {
-//        p *= q;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p += p;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p /= 2;
-//    }
-//    for (int i = 0; i < N; i++) {
+int main() {
+    big_integer p;
+    big_integer q;
+    std::cout << clock() / 1000.0 << std::endl;
+    freopen("tests.in", "r", stdin);
+    std::cin >> p;
+    std::cin >> q;
+
+    const int N = 1000;
+    for (int i = 0; i < N; i++) {
+        p *= q;
+    }
+    for (int i = 0; i < N; i++) {
+        p += p;
+    }
+    for (int i = 0; i < N; i++) {
+        p /= 2;
+    }
+    for (int i = 0; i < N; i++) {
+        p /= q;
+    }
+//    try {
 //        p /= q;
+//    } catch (std::string e) {
+//        std::cout << e;
 //    }
-//
-//    std::cout << p << std::endl;
-//    std::cout << clock() / 1000.0 << std::endl;
-//    return 0;
-//}
+    std::cout << p << std::endl;
+    std::cout << clock() / 1000.0 << std::endl;
+    return 0;
+}
