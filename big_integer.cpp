@@ -40,8 +40,8 @@ static inline void normalcode(big_integer &a) {
 }
 
 static big_integer &abstractLogicOperation(big_integer &a, big_integer b,
-                                           uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
-                                           bool (*check)(bool x, bool y)) {
+                                           uint_fast32_t (*logicFunc)(uint_fast32_t, uint_fast32_t),
+                                           bool (*check)(bool, bool)) {
     bool asign = a.sign;
     bool bsign = b.sign;
     if (!asign) {
