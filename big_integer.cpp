@@ -196,7 +196,7 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
 //static usi _ans[(1 << 64)];
 static big_integer _ans;
 
-static big_integer mult(const big_integer &b, uint_fast32_t x) {
+static big_integer mult(big_integer const &b, uint_fast32_t x) {
     ll carry = 0;
     big_integer a = b;
     a.number.push_back(0);
@@ -232,7 +232,6 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     while (number.size() > 1 && number.back() == 0)
         number.pop_back();
     afterMultSignValidation(*this, rhs.sign);
-    sign = zerocheck(*this);
     return *this;
 }
 
@@ -287,7 +286,6 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
     }
     this->number = ans;
     afterMultSignValidation(*this, rhs.sign);
-    sign = zerocheck(*this);
     return *this;
 }
 
@@ -346,7 +344,6 @@ big_integer big_integer::operator+() const {
     big_integer a = *this;
     a.sign = true;
     return a;
-
 }
 
 big_integer big_integer::operator-() const {
@@ -500,41 +497,42 @@ std::string to_string(big_integer const &a) {
     return s;
 }
 
-big_integer &big_integer::operator/=(int_fast32_t const x) {
+//returns:
+//div = true: *this / x
+//div = false: *this % x
+static big_integer& divWithMod(big_integer& th, int_fast32_t const x, bool div) {
     usi carry = 0;
     int_fast64_t xx = (int_fast64_t) x;
     uint_fast32_t y = (usi) std::abs(xx);
-    if (*this == 0) return *this;
+    if (th == 0) {
+        if (div) return th;
+        else {
+            th = 0;
+            return th;
+        }
+    }
     bool xsign = (x >= 0);
-    for (int i = (int) this->number.size() - 1; i >= 0; --i) {
-        ll cur = (ll) this->number[i] + (ll) carry * actualBase;
-        this->number[i] = usi(cur / y);
+    for (int i = (int) th.number.size() - 1; i >= 0; --i) {
+        ll cur = (ll) th.number[i] + (ll) carry * actualBase;
+        th.number[i] = usi(cur / y);
         carry = usi(cur % y);
     }
-    while (this->number.size() > 1 && this->number.back() == 0)
-        this->number.pop_back();
-    afterMultSignValidation(*this, xsign);
-    if (number.size() == 0 || (number.size() == 1 && number[0] == 0)) {
-        this->sign = true;
+    if (div) {
+        while (th.number.size() > 1 && th.number.back() == 0)
+            th.number.pop_back();
+    } else {
+        th = carry;
     }
-    return *this;
+    afterMultSignValidation(th, xsign);
+    return th;
+}
+
+big_integer &big_integer::operator/=(int_fast32_t const x) {
+    return divWithMod(*this, x, true);
 }
 
 big_integer big_integer::operator%=(int_fast32_t const x) {
-    usi carry = 0;
-    int_fast64_t xx = (int_fast64_t) x;
-    uint_fast32_t y = (usi) std::abs(xx);
-    if (*this == 0) return *this;
-    bool xsign = (x >= 0);
-    for (int i = (int) this->number.size() - 1; i >= 0; --i) {
-        ll cur = (ll) this->number[i] + (ll) carry * actualBase;
-        this->number[i] = usi(cur / y);
-        carry = usi(cur % y);
-    }
-    afterMultSignValidation(*this, xsign);
-    big_integer newthis = carry;
-    newthis.sign = this->sign;
-    return newthis;
+    return divWithMod(*this, x, false);
 }
 
 big_integer &big_integer::operator*=(int_fast32_t const x) {
@@ -543,8 +541,8 @@ big_integer &big_integer::operator*=(int_fast32_t const x) {
         return *this;
     }
     bool xsign = (x >= 0);
-    afterMultSignValidation(*this, xsign);
     this->number = mult(*this, usi(std::abs(x))).number;
+    afterMultSignValidation(*this, xsign);
     return *this;
 }
 
