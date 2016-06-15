@@ -5,7 +5,7 @@ typedef uint_fast32_t usi;
 typedef int_fast64_t ll;
 
 static const uint_fast32_t base = (uint_fast32_t) (1 << 31) - 1;
-static const uint_fast64_t actualBase = (uint_fast64_t) base + 1;
+static const int_fast64_t actualBase = (uint_fast64_t) base + 1;
 static const int basepow = 31;
 
 static inline bool afterMultSignValidation(bool thissign, bool xsign) {
@@ -82,13 +82,13 @@ big_integer::big_integer(big_integer const &other) {
 
 big_integer::big_integer(int_fast64_t a) {
     number.clear();
-    sign = a >= 0;
-    a = std::abs(a);
+    sign = (a >= 0);
+    //a = std::abs(a);
     if (a == 0) {
         number.push_back(0);
     }
-    while (a > 0) {
-        number.push_back((usi) (a % actualBase));
+    while (a != 0) {
+        number.push_back((usi) (std::abs((a % actualBase))));
         a /= actualBase;
     }
 }
@@ -112,7 +112,12 @@ big_integer::~big_integer() {
 }
 
 big_integer &big_integer::operator=(big_integer const &other) {
-    number = other.number;
+    this->number.resize(other.number.size());
+    //memcpy(&this->number[0], &other.number[0], other.number.size() * sizeof(usi));
+    //number = other.number;
+    for (size_t i = 0; i < other.number.size(); i++) {
+        this->number[i] = other.number[i];
+    }
     sign = other.sign;
     return *this;
 }
@@ -187,7 +192,26 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
 //static usi _ans[(1 << 64)];
 static big_integer _ans;
 
+static big_integer mult(const big_integer &b, uint_fast32_t x) {
+    ll carry = 0;
+    big_integer a = b;
+    a.number.push_back(0);
+    for (size_t i = 0; i < a.number.size() || carry; i++) {
+        ll cur = carry + (ll) a.number[i] * x;
+        a.number[i] = (usi) (cur % actualBase);
+        carry = usi(cur / actualBase);
+    }
+    while (a.number.size() > 1 && a.number.back() == 0)
+        a.number.pop_back();
+    return a;
+}
+
 big_integer &big_integer::operator*=(big_integer const &rhs) {
+    if (rhs.number.size() == 1) {
+        *this = mult(*this, rhs.number[0]);
+        sign = afterMultSignValidation(sign, rhs.sign);
+        return *this;
+    }
     //_ans.number.resize(number.size() + rhs.number.size());
     if (number.size() + rhs.number.size() > _ans.number.size()) _ans.number.resize(number.size() + rhs.number.size());
     memset(&_ans.number[0], 0, _ans.number.size() * sizeof(usi));
@@ -207,21 +231,12 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     return *this;
 }
 
-static big_integer mult(const big_integer &b, uint_fast32_t x) {
-    ll carry = 0;
-    big_integer a = b;
-    a.number.push_back(0);
-    for (size_t i = 0; i < a.number.size() || carry; i++) {
-        ll cur = carry + (ll) a.number[i] * x;
-        a.number[i] = (usi) (cur % actualBase);
-        carry = usi(cur / actualBase);
-    }
-    while (a.number.size() > 1 && a.number.back() == 0)
-        a.number.pop_back();
-    return a;
-}
-
 big_integer &big_integer::operator/=(big_integer const &rhs) {
+    if (rhs.number.size() == 1 && (rhs.number[0] <= usi(std::numeric_limits<int_fast32_t>::max()))) {
+        *this /= rhs.number[0];
+        this->sign = afterMultSignValidation(sign, rhs.sign);
+        return *this;
+    }
     std::vector<usi> ans;
     ans.resize(this->number.size() - rhs.number.size() + 1);
     big_integer curValue(*this);
@@ -266,11 +281,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
         ans.pop_back();
     }
     this->number = ans;
-    if (this->sign == rhs.sign) {
-        this->sign = true;
-    } else {
-        this->sign = false;
-    }
+    this->sign = afterMultSignValidation(sign, rhs.sign);
     if (ans.size() == 0 || (ans.size() == 1 && ans[0] == 0)) {
         this->sign = true;
     }
@@ -488,9 +499,10 @@ std::string to_string(big_integer const &a) {
 
 big_integer &big_integer::operator/=(int_fast32_t const x) {
     usi carry = 0;
-    int_fast32_t y = std::abs(x);
+    uint_fast32_t y = (usi) std::abs(x);
     if (*this == 0) return *this;
-    bool xsign = (x == y);
+    int_fast64_t xx = x;
+    bool xsign = (x > 0);
     for (int i = (int) this->number.size() - 1; i >= 0; --i) {
         ll cur = (ll) this->number[i] + (ll) carry * actualBase;
         this->number[i] = usi(cur / y);
@@ -499,12 +511,15 @@ big_integer &big_integer::operator/=(int_fast32_t const x) {
     while (this->number.size() > 1 && this->number.back() == 0)
         this->number.pop_back();
     this->sign = afterMultSignValidation(this->sign, xsign);
+    if (number.size() == 0 || (number.size() == 1 && number[0] == 0)) {
+        this->sign = true;
+    }
     return *this;
 }
 
 big_integer big_integer::operator%=(int_fast32_t const x) {
     usi carry = 0;
-    int_fast32_t y = std::abs(x);
+    uint_fast32_t y = (usi) std::abs(x);
     if (*this == 0) return *this;
     bool xsign = (x == y);
     for (int i = (int) this->number.size() - 1; i >= 0; --i) {
@@ -529,6 +544,13 @@ big_integer &big_integer::operator*=(int_fast32_t const x) {
     return *this;
 }
 
+big_integer &big_integer::operator=(int_fast64_t other) {
+    big_integer a(other);
+    *this = a;
+    return *this;
+}
+
+
 std::ostream &operator<<(std::ostream &s, big_integer const &a) {
     return s << to_string(a);
 }
@@ -540,32 +562,37 @@ void operator>>(std::istream &s, big_integer &a) {
 }
 
 //int main() {
-//    big_integer p;
-//    big_integer q;
+////    big_integer p;
+////    big_integer q;
+//    //std::cout << clock() / 1000.0 << std::endl;
+//    freopen("test.in", "r", stdin);
+////    std::cin >> p;
+////    std::cin >> q;
 //
-//    //q = big_integer("8963214782301");
-//    //p = big_integer("789456235896214587");
-//    std::cout << clock() / 1000.0 << std::endl;
-//    freopen("tests.in", "r", stdin);
-//    std::cin >> p;
-//    std::cin >> q;
-////    big_integer res = -p % q;
-//    const int N = 1000;
-//    for (int i = 0; i < N; i++) {
-//        p *= q;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p += p;
-//    }
-//    for (int i = 0; i < N; i++) {
-//        p /= 2;
-//    }
-//    //std::cout << p << std::endl;
-//    for (int i = 0; i < N; i++) {
-//        p /= q;
-//    }
-//    //p *= q;
-//    std::cout << p << std::endl;
-//    std::cout << clock() / 1000.0 << std::endl;
+////    const int N = 1000;
+////    for (int i = 0; i < N; i++) {
+////        p *= q;
+////    }
+////    for (int i = 0; i < N; i++) {
+////        p += p;
+////    }
+////    for (int i = 0; i < N; i++) {
+////        p /= 2;
+////    }
+////    //std::cout << p << std::endl;
+////    for (int i = 0; i < N; i++) {
+////        p /= q;
+////    }
+//
+//
+//    big_integer a;
+//    std::cin >> a;
+//    std::cout << (a / a) << std::endl;
+//    std::cout << a / std::numeric_limits<int>::min() << std::endl;
+//    bool ok = ((a / a) == (a / std::numeric_limits<int>::min()));
+//    std::cout << ok << std::endl;
+//
+//
+//    //std::cout << clock() / 1000.0 << std::endl;
 //    return 0;
 //}

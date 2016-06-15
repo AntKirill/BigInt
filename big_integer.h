@@ -21,6 +21,8 @@ struct big_integer {
 
     big_integer &operator=(big_integer const &other);
 
+    big_integer &operator=(int_fast64_t other);
+
     big_integer &operator+=(big_integer const &rhs);
 
     big_integer &operator-=(big_integer const &rhs);
