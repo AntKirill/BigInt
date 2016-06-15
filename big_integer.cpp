@@ -5,7 +5,7 @@ typedef uint_fast32_t usi;
 typedef int_fast64_t ll;
 
 static const uint_fast32_t base = (uint_fast32_t) (1 << 31) - 1;
-static const int_fast64_t actualBase = (uint_fast64_t) base + 1;
+static const int_fast64_t actualBase = (int_fast64_t) base + 1;
 static const int basepow = 31;
 
 static inline bool afterMultSignValidation(bool thissign, bool xsign) {
@@ -501,7 +501,6 @@ big_integer &big_integer::operator/=(int_fast32_t const x) {
     usi carry = 0;
     uint_fast32_t y = (usi) std::abs(x);
     if (*this == 0) return *this;
-    int_fast64_t xx = x;
     bool xsign = (x > 0);
     for (int i = (int) this->number.size() - 1; i >= 0; --i) {
         ll cur = (ll) this->number[i] + (ll) carry * actualBase;
@@ -521,7 +520,7 @@ big_integer big_integer::operator%=(int_fast32_t const x) {
     usi carry = 0;
     uint_fast32_t y = (usi) std::abs(x);
     if (*this == 0) return *this;
-    bool xsign = (x == y);
+    bool xsign = (x >= 0);
     for (int i = (int) this->number.size() - 1; i >= 0; --i) {
         ll cur = (ll) this->number[i] + (ll) carry * actualBase;
         this->number[i] = usi(cur / y);
