@@ -104,7 +104,6 @@ big_integer::big_integer(big_integer const &other) {
 big_integer::big_integer(int_fast64_t a) {
     number.clear();
     sign = (a >= 0);
-    //a = std::abs(a);
     if (a == 0) {
         number.push_back(0);
     }
