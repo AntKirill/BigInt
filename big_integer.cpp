@@ -540,6 +540,7 @@ static inline big_integer &divWithMod(big_integer &th, int_fast32_t const x, boo
         bool saveSign = th.sign;
         th = carry;
         th.sign = saveSign;
+        xsign = true;
     }
     afterMultSignValidation(th, xsign);
     return th;
