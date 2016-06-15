@@ -39,9 +39,9 @@ static inline void normalcode(big_integer &a) {
     }
 }
 
-static void abstractLogicOperation(big_integer &a, big_integer b,
-                                   uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
-                                   bool (*check)(bool x, bool y)) {
+static big_integer &abstractLogicOperation(big_integer &a, big_integer b,
+                                           uint_fast32_t (*logicFunc)(uint_fast32_t x, uint_fast32_t y),
+                                           bool (*check)(bool x, bool y)) {
     bool asign = a.sign;
     bool bsign = b.sign;
     if (!asign) {
@@ -56,6 +56,7 @@ static void abstractLogicOperation(big_integer &a, big_integer b,
     if (check(!asign, !bsign)) {
         normalcode(a);
     }
+    return a;
 }
 
 static bool cmpPosSigns(big_integer const &a, big_integer const &b) { //if a == b return false; if a > b return true;
@@ -235,15 +236,23 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     return *this;
 }
 
-big_integer &big_integer::operator/=(big_integer const &rhs) {
+//returns:
+//div = true : th / rhs
+//div = false : rh % rhs
+static big_integer &divWithModBig(big_integer &th, big_integer const &rhs, bool div) {
     if (rhs.number.size() == 1 && (rhs.number[0] <= usi(std::numeric_limits<int_fast32_t>::max()))) {
-        *this /= rhs.number[0];
-        afterMultSignValidation(*this, rhs.sign);
-        return *this;
+        bool saveRhsSign = true;
+        if (div) {
+            th /= rhs.number[0];
+            saveRhsSign = rhs.sign;
+        }
+        else th %= rhs.number[0];
+        afterMultSignValidation(th, saveRhsSign);
+        return th;
     }
     std::vector<usi> ans;
-    ans.resize(this->number.size() - rhs.number.size() + 1);
-    big_integer curValue(*this);
+    ans.resize(th.number.size() - rhs.number.size() + 1);
+    big_integer curValue(th);
     curValue.sign = true;
     big_integer now(0);
     big_integer divider(rhs);
@@ -280,36 +289,45 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
         curValue -= now;
         ans[i] = usi(l);
     }
-    std::reverse(ans.begin(), ans.end());
-    while (ans.size() > 1 && ans.back() == 0) {
-        ans.pop_back();
+    bool saveSign;
+    if (div) {
+        std::reverse(ans.begin(), ans.end());
+        th.number = ans;
+        saveSign = rhs.sign;
+    } else {
+        th.number = curValue.number;
+        saveSign = true;
     }
-    this->number = ans;
-    afterMultSignValidation(*this, rhs.sign);
-    return *this;
+    while (th.number.size() > 1 && th.number.back() == 0) {
+        th.number.pop_back();
+    }
+    afterMultSignValidation(th, saveSign);
+    return th;
+}
+
+big_integer &big_integer::operator/=(big_integer const &rhs) {
+    return divWithModBig(*this, rhs, true);
 }
 
 big_integer &big_integer::operator%=(big_integer const &rhs) {
-    *this -= rhs * (*this / rhs);
-    return *this;
+//    *this -= rhs * (*this / rhs);
+//    return *this;
+    return divWithModBig(*this, rhs, false);
 }
 
 big_integer &big_integer::operator&=(big_integer const &rhs) {
-    abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a & b; },
-                           [](bool x, bool y) -> bool { return x & y; });
-    return *this;
+    return abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a & b; },
+                                  [](bool x, bool y) -> bool { return x & y; });
 }
 
 big_integer &big_integer::operator|=(big_integer const &rhs) {
-    abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a | b; },
-                           [](bool x, bool y) -> bool { return x | y; });
-    return *this;
+    return abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a | b; },
+                                  [](bool x, bool y) -> bool { return x | y; });
 }
 
 big_integer &big_integer::operator^=(big_integer const &rhs) {
-    abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a ^ b; },
-                           [](bool x, bool y) -> bool { return x | y; });
-    return *this;
+    return abstractLogicOperation(*this, big_integer(rhs), [](usi a, usi b) -> usi { return a ^ b; },
+                                  [](bool x, bool y) -> bool { return x | y; });
 }
 
 big_integer &big_integer::operator<<=(int rhs) {
@@ -474,11 +492,9 @@ bool operator>=(big_integer const &a, big_integer const &b) {
 }
 
 std::string to_string(big_integer const &a) {
-    int beg = 0;
     std::string s;
     if (!a.sign) {
         s += '-';
-        beg++;
     }
     big_integer b = a;
     b.sign = true;
@@ -500,7 +516,7 @@ std::string to_string(big_integer const &a) {
 //returns:
 //div = true: *this / x
 //div = false: *this % x
-static big_integer &divWithMod(big_integer &th, int_fast32_t const x, bool div) {
+static inline big_integer &divWithMod(big_integer &th, int_fast32_t const x, bool div) {
     usi carry = 0;
     int_fast64_t xx = (int_fast64_t) x;
     uint_fast32_t y = (usi) std::abs(xx);
@@ -521,7 +537,9 @@ static big_integer &divWithMod(big_integer &th, int_fast32_t const x, bool div) 
         while (th.number.size() > 1 && th.number.back() == 0)
             th.number.pop_back();
     } else {
+        bool saveSign = th.sign;
         th = carry;
+        th.sign = saveSign;
     }
     afterMultSignValidation(th, xsign);
     return th;
@@ -531,7 +549,7 @@ big_integer &big_integer::operator/=(int_fast32_t const x) {
     return divWithMod(*this, x, true);
 }
 
-big_integer big_integer::operator%=(int_fast32_t const x) {
+big_integer &big_integer::operator%=(int_fast32_t const x) {
     return divWithMod(*this, x, false);
 }
 
@@ -571,21 +589,21 @@ void operator>>(std::istream &s, big_integer &a) {
 //    std::cin >> p;
 //    std::cin >> q;
 //
-////    const int N = 100;
-////    for (int i = 0; i < N; i++) {
-////        p *= q;
-////    }
-////    for (int i = 0; i < N; i++) {
-////        p += p;
-////    }
-////    for (int i = 0; i < N; i++) {
-////        p /= 2;
-////    }
-////    for (int i = 0; i < N; i++) {
-////        p /= q;
-////    }
+//    const int N = 1000;
+//    for (int i = 0; i < N; i++) {
+//        p *= q;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p += p;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= 2;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= q;
+//    }
 //
-//    std::cout << p * q << std::endl;
+//    std::cout << p << std::endl;
 //    std::cout << clock() / 1000.0 << std::endl;
 //    return 0;
 //}
