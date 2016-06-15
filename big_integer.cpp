@@ -23,7 +23,7 @@ static inline void afterMultSignValidation(big_integer &th, bool xsign) {
     th.sign = zerocheck(th);
 }
 
-static void extracode(big_integer &a) {
+static inline void extracode(big_integer &a) {
     for (size_t i = 0; i < a.number.size(); i++) {
         a.number[i] = (~(a.number[i]) & base);
     }
@@ -31,7 +31,7 @@ static void extracode(big_integer &a) {
     a += 1;
 }
 
-static void normalcode(big_integer &a) {
+static inline void normalcode(big_integer &a) {
     a -= 1;
     a.sign = false;
     for (size_t i = 0; i < a.number.size(); i++) {
@@ -39,11 +39,11 @@ static void normalcode(big_integer &a) {
     }
 }
 
-static inline void check_zerodiv(big_integer const &a) {
+static void check_zerodiv(big_integer const &a) {
     if (a == 0) throw std::string("Devising by zero\n");
 }
 
-static inline void check_zerodiv(int_fast32_t a) {
+static void check_zerodiv(int_fast32_t a) {
     if (a == 0) throw std::string("Devising by zero\n");
 }
 
