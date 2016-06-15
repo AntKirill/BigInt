@@ -43,8 +43,12 @@ static inline void check_zerodiv(big_integer const &a) {
     if (a == 0) throw std::string("Devising by zero\n");
 }
 
-static void check_zerodiv(int_fast32_t a) {
+static inline void check_zerodiv(int_fast32_t a) {
     if (a == 0) throw std::string("Devising by zero\n");
+}
+
+static inline void check_negative_shf(int const a) {
+    if (a < 0) throw std::string("Negative shigting\n");
 }
 
 
@@ -350,31 +354,41 @@ big_integer &big_integer::operator^=(big_integer const &rhs) {
 }
 
 big_integer &big_integer::operator<<=(int rhs) {
-    std::reverse(this->number.begin(), this->number.end());
-    for (int i = 0; i < rhs / basepow; i++) {
-        this->number.push_back(0);
+    try {
+        check_negative_shf(rhs);
+        std::reverse(this->number.begin(), this->number.end());
+        for (int i = 0; i < rhs / basepow; i++) {
+            this->number.push_back(0);
+        }
+        std::reverse(this->number.begin(), this->number.end());
+        for (int i = 0; i < rhs % basepow; i++) {
+            *this *= 2;
+        }
+        return *this;
+    } catch (std::string e) {
+        throw e;
     }
-    std::reverse(this->number.begin(), this->number.end());
-    for (int i = 0; i < rhs % basepow; i++) {
-        *this *= 2;
-    }
-    return *this;
 }
 
 big_integer &big_integer::operator>>=(int rhs) {
-    std::reverse(this->number.begin(), this->number.end());
-    bool thissigne = sign;
-    for (int i = 0; i < rhs / basepow; i++) {
-        this->number.pop_back();
+    try {
+        check_negative_shf(rhs);
+        std::reverse(this->number.begin(), this->number.end());
+        bool thissigne = sign;
+        for (int i = 0; i < rhs / basepow; i++) {
+            this->number.pop_back();
+        }
+        std::reverse(this->number.begin(), this->number.end());
+        for (int i = 0; i < rhs % basepow; i++) {
+            *this /= 2;
+        }
+        if (!thissigne) {
+            *this -= 1;
+        }
+        return *this;
+    } catch (std::string e) {
+        throw e;
     }
-    std::reverse(this->number.begin(), this->number.end());
-    for (int i = 0; i < rhs % basepow; i++) {
-        *this /= 2;
-    }
-    if (!thissigne) {
-        *this -= 1;
-    }
-    return *this;
 }
 
 big_integer big_integer::operator+() const {
@@ -433,8 +447,7 @@ big_integer operator*(big_integer a, int_fast32_t const x) {
 
 big_integer operator/(big_integer a, big_integer const &b) {
     try {
-        a /= b;
-        return a;
+        return a /= b;
     } catch (std::string e) {
         throw e;
     }
@@ -442,8 +455,7 @@ big_integer operator/(big_integer a, big_integer const &b) {
 
 big_integer operator/(big_integer a, int_fast32_t const x) {
     try {
-        a /= x;
-        return a;
+        return a /= x;
     } catch (std::string e) {
         throw e;
     }
@@ -480,11 +492,19 @@ big_integer operator^(big_integer a, big_integer const &b) {
 }
 
 big_integer operator<<(big_integer a, int b) {
-    return a <<= b;
+    try {
+        return a <<= b;
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 big_integer operator>>(big_integer a, int b) {
-    return a >>= b;
+    try {
+        return a >>= b;
+    } catch (std::string e) {
+        throw e;
+    }
 }
 
 bool operator==(big_integer const &a, big_integer const &b) {
@@ -631,33 +651,35 @@ void operator>>(std::istream &s, big_integer &a) {
     a = big_integer(str);
 }
 
-int main() {
-    big_integer p;
-    big_integer q;
-    std::cout << clock() / 1000.0 << std::endl;
-    freopen("tests.in", "r", stdin);
-    std::cin >> p;
-    std::cin >> q;
-
-    const int N = 1000;
-    for (int i = 0; i < N; i++) {
-        p *= q;
-    }
-    for (int i = 0; i < N; i++) {
-        p += p;
-    }
-    for (int i = 0; i < N; i++) {
-        p /= 2;
-    }
-    for (int i = 0; i < N; i++) {
-        p /= q;
-    }
-//    try {
-//        p /= q;
-//    } catch (std::string e) {
-//        std::cout << e;
+//int main() {
+//    big_integer p;
+//    big_integer q;
+//    std::cout << clock() / 1000.0 << std::endl;
+//    freopen("tests.in", "r", stdin);
+//    std::cin >> p;
+//    std::cin >> q;
+//
+//    const int N = 1000;
+//    for (int i = 0; i < N; i++) {
+//        p *= q;
 //    }
-    std::cout << p << std::endl;
-    std::cout << clock() / 1000.0 << std::endl;
-    return 0;
-}
+//    for (int i = 0; i < N; i++) {
+//        p += p;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= 2;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= q;
+//    }
+//
+////    try {
+////        p <<= (-1);
+////    } catch (std::string e) {
+////        std::cout << e;
+////    }
+//
+//    std::cout << p << std::endl;
+//    std::cout << clock() / 1000.0 << std::endl;
+//    return 0;
+//}
