@@ -499,9 +499,10 @@ std::string to_string(big_integer const &a) {
 
 big_integer &big_integer::operator/=(int_fast32_t const x) {
     usi carry = 0;
-    uint_fast32_t y = (usi) std::abs(x);
+    int_fast64_t xx = (int_fast64_t) x;
+    uint_fast32_t y = (usi) std::abs(xx);
     if (*this == 0) return *this;
-    bool xsign = (x > 0);
+    bool xsign = (x >= 0);
     for (int i = (int) this->number.size() - 1; i >= 0; --i) {
         ll cur = (ll) this->number[i] + (ll) carry * actualBase;
         this->number[i] = usi(cur / y);
@@ -518,7 +519,8 @@ big_integer &big_integer::operator/=(int_fast32_t const x) {
 
 big_integer big_integer::operator%=(int_fast32_t const x) {
     usi carry = 0;
-    uint_fast32_t y = (usi) std::abs(x);
+    int_fast64_t xx = (int_fast64_t) x;
+    uint_fast32_t y = (usi) std::abs(xx);
     if (*this == 0) return *this;
     bool xsign = (x >= 0);
     for (int i = (int) this->number.size() - 1; i >= 0; --i) {
@@ -561,37 +563,28 @@ void operator>>(std::istream &s, big_integer &a) {
 }
 
 //int main() {
-////    big_integer p;
-////    big_integer q;
-//    //std::cout << clock() / 1000.0 << std::endl;
-//    freopen("test.in", "r", stdin);
-////    std::cin >> p;
-////    std::cin >> q;
+//    big_integer p;
+//    big_integer q;
+//    std::cout << clock() / 1000.0 << std::endl;
+//    freopen("tests.in", "r", stdin);
+//    std::cin >> p;
+//    std::cin >> q;
 //
-////    const int N = 1000;
-////    for (int i = 0; i < N; i++) {
-////        p *= q;
-////    }
-////    for (int i = 0; i < N; i++) {
-////        p += p;
-////    }
-////    for (int i = 0; i < N; i++) {
-////        p /= 2;
-////    }
-////    //std::cout << p << std::endl;
-////    for (int i = 0; i < N; i++) {
-////        p /= q;
-////    }
+//    const int N = 100;
+//    for (int i = 0; i < N; i++) {
+//        p *= q;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p += p;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= 2;
+//    }
+//    for (int i = 0; i < N; i++) {
+//        p /= q;
+//    }
 //
-//
-//    big_integer a;
-//    std::cin >> a;
-//    std::cout << (a / a) << std::endl;
-//    std::cout << a / std::numeric_limits<int>::min() << std::endl;
-//    bool ok = ((a / a) == (a / std::numeric_limits<int>::min()));
-//    std::cout << ok << std::endl;
-//
-//
-//    //std::cout << clock() / 1000.0 << std::endl;
+//    std::cout << p << std::endl;
+//    std::cout << clock() / 1000.0 << std::endl;
 //    return 0;
 //}
