@@ -132,7 +132,7 @@ big_integer &big_integer::operator=(big_integer const &other) {
     return *this;
 }
 
-big_integer &big_integer::operator+=(big_integer const &rhs) {
+big_integer &big_integer::operator+=(big_integer rhs) {
     if (sign == rhs.sign) {
         usi carry = 0;
         ll cur = 0;
@@ -144,19 +144,17 @@ big_integer &big_integer::operator+=(big_integer const &rhs) {
             carry = (usi) (cur / actualBase);
         }
     } else {
-        big_integer posThis = *this;
-        posThis.sign = true;
-        big_integer posRhs = rhs;
-        posRhs.sign = true;
-        bool saveSign;
-        if (posThis > posRhs) {
-            saveSign = sign;
+        bool saveSign = sign;
+        sign = true;
+        rhs.sign = true;
+        bool newSign;
+        if (*this > rhs) {
+            newSign = saveSign;
         } else {
-            saveSign = !sign;
+            newSign = !saveSign;
         }
-        posThis -= posRhs;
-        *this = posThis;
-        sign = saveSign;
+        *this -= rhs;
+        sign = newSign;
     }
     sign = zerocheck(*this);
     return *this;
