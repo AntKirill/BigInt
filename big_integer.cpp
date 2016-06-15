@@ -23,7 +23,7 @@ static inline void afterMultSignValidation(big_integer &th, bool xsign) {
     th.sign = zerocheck(th);
 }
 
-static inline void extracode(big_integer &a) {
+static void extracode(big_integer &a) {
     for (size_t i = 0; i < a.number.size(); i++) {
         a.number[i] = (~(a.number[i]) & base);
     }
@@ -31,7 +31,7 @@ static inline void extracode(big_integer &a) {
     a += 1;
 }
 
-static inline void normalcode(big_integer &a) {
+static void normalcode(big_integer &a) {
     a -= 1;
     a.sign = false;
     for (size_t i = 0; i < a.number.size(); i++) {
