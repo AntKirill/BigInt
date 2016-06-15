@@ -500,7 +500,7 @@ std::string to_string(big_integer const &a) {
 //returns:
 //div = true: *this / x
 //div = false: *this % x
-static big_integer& divWithMod(big_integer& th, int_fast32_t const x, bool div) {
+static big_integer &divWithMod(big_integer &th, int_fast32_t const x, bool div) {
     usi carry = 0;
     int_fast64_t xx = (int_fast64_t) x;
     uint_fast32_t y = (usi) std::abs(xx);
